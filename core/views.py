@@ -1,6 +1,8 @@
 import json
 
-from django.contrib.auth.views import LogoutView
+from django.contrib.auth import logout
+from django.shortcuts import render, redirect
+from django.views import View
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
@@ -141,5 +143,11 @@ def dictamenes_view(request):
     })
 
 
-class MitaLogoutView(LogoutView):
-    next_page = '/login/'
+class MitaLogoutView(View):
+    def get(self, request):
+        logout(request)
+        return redirect("login")
+
+    def post(self, request):
+        logout(request)
+        return redirect("login")
