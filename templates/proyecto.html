@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Proyecto Demo — MITA{% endblock %}
+{% block page_title %}Proyecto de Referencia{% endblock %}
+
+{% block content %}
+{% if proyecto %}
+<div class="card" style="margin-bottom:1.5rem;">
+  <h3>{{ proyecto.nombre }}</h3>
+  <p style="margin-top:0.5rem;">{{ proyecto.objetivo }}</p>
+  <p style="margin-top:0.5rem;font-size:0.9rem;color:var(--mita-muted);">{{ proyecto.enfoque }}</p>
+</div>
+
+<div class="card" style="margin-bottom:1.5rem;">
+  <h3>Analogía Sistémica</h3>
+  <p><strong>{{ proyecto.analogia.titulo }}</strong></p>
+  <ul style="margin-top:0.5rem;padding-left:1.25rem;font-size:0.9rem;">
+    {% for el in proyecto.analogia.elementos %}
+    <li><strong>{{ el.parte }}</strong> → {{ el.representa }}</li>
+    {% endfor %}
+  </ul>
+  <p style="margin-top:0.75rem;font-size:0.85rem;">{{ proyecto.analogia.principio }}</p>
+</div>
+
+<h3 style="margin-bottom:1rem;">Ejes de Acción</h3>
+<div class="grid grid-2">
+  {% for eje in ejes %}
+  <div class="card">
+    <h3>Eje {{ eje.numero }}: {{ eje.nombre }}</h3>
+    <p style="font-size:0.85rem;color:var(--mita-muted);">Origen: {{ eje.origen }}</p>
+    <ul style="margin-top:0.5rem;padding-left:1.25rem;font-size:0.85rem;">
+      {% for accion in eje.acciones %}
+      <li>{{ accion }}</li>
+      {% endfor %}
+    </ul>
+    <p style="margin-top:0.75rem;"><span class="badge badge-success">Meta: {{ eje.meta }}</span></p>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p>No hay proyecto de referencia cargado.</p>
+{% endif %}
+{% endblock %}

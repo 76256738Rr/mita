@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — MITA{% endblock %}
+{% block page_title %}Panel de Control{% endblock %}
+
+{% block content %}
+<div class="alert alert-info">
+  Plataforma de procesos y flujos MITA: registro → análisis → dictamen → seguimiento.
+</div>
+
+{% if demo_activo %}
+<div class="card" style="margin-bottom:1.5rem;border-left:4px solid var(--mita-success);">
+  <h3>Proyecto demo simulado — EDOMEX DIABETES 2026–2032</h3>
+  <p style="font-size:0.9rem;margin:0.5rem 0;">
+    Expediente activo en <strong>Paso {{ demo_activo.paso_actual }}/7</strong>
+    (evaluación {{ demo_activo.evaluacion.puntuacion_total|default:"—" }}/100).
+  </p>
+  <a href="{% url 'expediente-detalle' demo_activo.pk %}" class="btn btn-primary">Abrir expediente demo →</a>
+  {% if demo_dictaminado %}
+  <a href="{% url 'expediente-detalle' demo_dictaminado.pk %}" class="btn btn-success" style="margin-left:0.5rem;">Ver dictaminado →</a>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="grid grid-4" style="margin-bottom:1.5rem;">
+  <div class="card stat-card">
+    <div class="value">{{ stats.expedientes }}</div>
+    <div class="label">Expedientes activos</div>
+  </div>
+  <div class="card stat-card">
+    <div class="value">{{ stats.tareas }}</div>
+    <div class="label">Tareas pendientes</div>
+  </div>
+  <div class="card stat-card">
+    <div class="value">{{ stats.dictamenes }}</div>
+    <div class="label">Dictámenes emitidos</div>
+  </div>
+  <div class="card stat-card">
+    <div class="value">{{ stats.disciplinas }}</div>
+    <div class="label">Disciplinas</div>
+  </div>
+</div>
+
+<div class="grid grid-2" style="margin-bottom:1.5rem;">
+  <div class="card">
+    <h3>Centro de procesos</h3>
+    <p style="font-size:0.9rem;margin-bottom:1rem;">Flujo operativo de 7 pasos integrado con todos los módulos MITA.</p>
+    <a href="{% url 'proceso' %}" class="btn btn-primary">Ver proceso operativo</a>
+    <a href="{% url 'bandeja' %}" class="btn btn-success" style="margin-left:0.5rem;">Bandeja de trabajo</a>
+  </div>
+  <div class="card">
+    <h3>Expedientes recientes</h3>
+    {% for e in expedientes_recientes %}
+    <p style="font-size:0.85rem;padding:0.35rem 0;border-bottom:1px solid var(--mita-border);">
+      <a href="{% url 'expediente-detalle' e.pk %}">{{ e.folio }}</a> — Paso {{ e.paso_actual }}/7
+      <span class="badge badge-info">{{ e.get_estado_display }}</span>
+    </p>
+    {% empty %}
+    <p style="color:var(--mita-muted);">Sin expedientes. <a href="{% url 'expediente-nuevo' %}">Crear uno</a></p>
+    {% endfor %}
+  </div>
+</div>
+
+{% if proyecto %}
+<div class="grid grid-2">
+  <div class="card">
+    <h3>Proyecto de Referencia</h3>
+    <p><strong>{{ proyecto.nombre }}</strong></p>
+    <p style="margin-top:0.5rem;font-size:0.9rem;">{{ proyecto.objetivo }}</p>
+    <a href="{% url 'proyecto' %}" class="btn btn-primary" style="margin-top:1rem;">Ver proyecto</a>
+  </div>
+  <div class="card">
+    <h3>Metas Globales 2026–2032</h3>
+    {% for key, val in proyecto.metas_globales.items %}
+    <p><strong>{{ key|title }}:</strong> {{ val }}</p>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

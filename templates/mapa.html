@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Mapa Geoespacial — MITA{% endblock %}
+{% block page_title %}Geoespecialidad y Mapeo (RF-07){% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% endblock %}
+
+{% block content %}
+{% if expediente %}
+<div class="alert alert-info">
+  <strong>Paso {{ paso_proceso }} del proceso operativo</strong> — Contexto geográfico para
+  <a href="{% url 'expediente-detalle' expediente.pk %}">{{ expediente.folio }}</a>.
+</div>
+{% endif %}
+<p style="margin-bottom:1rem;color:var(--mita-muted);">
+  Integración SIG: capas de prevalencia, marginación e infraestructura. Hotspots del Corredor Oriente.
+</p>
+<div id="map"></div>
+<div class="grid grid-3" style="margin-top:1.5rem;">
+  {% for z in zonas %}
+  <div class="card">
+    <h3>{{ z.nombre }}</h3>
+    <p>Prevalencia: <strong>{{ z.prevalencia }}%</strong></p>
+    <p>Mortalidad: {{ z.mortalidad }}/100 mil</p>
+    <span class="badge {% if z.tipo == 'hotspot' %}badge-danger{% else %}badge-info{% endif %}">{{ z.get_tipo_display }}</span>
+    <span class="badge badge-warning">{{ z.get_corredor_display }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const zonas = {{ zonas_json|safe }};
+const map = L.map('map').setView([19.4, -99.5], 9);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap'
+}).addTo(map);
+
+zonas.forEach(z => {
+  const color = z.prevalencia >= 20 ? '#c53030' : z.prevalencia >= 15 ? '#c05621' : '#3182ce';
+  L.circleMarker([z.lat, z.lng], {
+    radius: 8 + (z.prevalencia / 3),
+    fillColor: color,
+    color: '#fff',
+    weight: 2,
+    fillOpacity: 0.8
+  }).addTo(map).bindPopup(
+    `<strong>${z.nombre}</strong><br>Prevalencia: ${z.prevalencia}%<br>${z.descripcion}`
+  );
+});
+</script>
+{% endblock %}

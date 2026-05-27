@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+{% block title %}{{ expediente.folio }} — MITA{% endblock %}
+{% block page_title %}{{ expediente.folio }}{% endblock %}
+
+{% block content %}
+{% if solo_lectura %}
+<div class="alert alert-warning">Modo consulta — su rol no permite modificar este expediente.</div>
+{% endif %}
+{% if es_demo %}
+<div class="alert alert-success">Expediente de demostración — Proyecto EDOMEX DIABETES 2026–2032</div>
+{% endif %}
+{% if messages %}
+{% for msg in messages %}
+<div class="alert alert-{% if msg.tags == 'error' %}warning{% else %}success{% endif %}">{{ msg }}</div>
+{% endfor %}
+{% endif %}
+
+<div class="card" style="margin-bottom:1.5rem;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h3 style="margin-bottom:0.25rem;">{{ expediente.titulo }}</h3>
+      <p style="font-size:0.9rem;color:var(--mita-muted);">{{ expediente.descripcion|truncatechars:120 }}</p>
+      <p style="font-size:0.85rem;margin-top:0.5rem;">
+        <span class="badge badge-info">{{ expediente.get_estado_display }}</span>
+        {% if expediente.vencido %}<span class="badge badge-danger">Plazo vencido</span>{% endif %}
+        {% if dictamen %}<span class="badge badge-success">{{ dictamen.folio }}</span>{% endif %}
+      </p>
+    </div>
+    <div style="text-align:right;">
+      <div class="value" style="font-size:1.5rem;font-weight:700;color:var(--mita-secondary);">{{ expediente.progreso_pct }}%</div>
+      <div class="label">Progreso del flujo</div>
+    </div>
+  </div>
+  <div class="progress-bar" style="margin-top:1rem;height:10px;">
+    <div class="fill" style="width:{{ expediente.progreso_pct }}%"></div>
+  </div>
+</div>
+
+<!-- Proceso operativo integrado -->
+{% include 'partials/proceso_stepper.html' with pasos_estado=pasos_estado expediente=expediente show_modulo=True %}
+
+<form method="post" class="card" style="margin-top:1.5rem;" id="paso-activo">
+  {% csrf_token %}
+  <h3>Paso {{ paso }}: {{ expediente.paso_nombre }}</h3>
+
+  {% include 'partials/paso_modulos.html' with ctx=ctx_herramientas expediente=expediente paso=paso %}
+
+  {% if paso > 1 and paso <= 4 %}
+  <div class="alert alert-info" style="margin:1rem 0;font-size:0.85rem;">
+    <strong>Contexto acumulado:</strong>
+    {% if disciplinas_sel %}{{ disciplinas_sel|length }} disciplina(s){% endif %}
+    {% if cruce %} · Cruce calculado{% endif %}
+    {% if evaluacion %} · Evaluación {{ evaluacion.puntuacion_total }}/100{% endif %}
+  </div>
+  {% endif %}
+
+  {% if paso == 1 %}
+  <div class="form-group"><label>Título</label><input type="text" name="titulo" value="{{ expediente.titulo }}" required></div>
+  <div class="form-group"><label>Descripción</label><textarea name="descripcion" rows="3">{{ expediente.descripcion }}</textarea></div>
+  <div class="form-group"><label>Solicitante</label><input type="text" name="solicitante" value="{{ expediente.solicitante }}"></div>
+  <div class="form-group"><label>Dependencia</label><input type="text" name="dependencia" value="{{ expediente.dependencia }}"></div>
+
+  {% elif paso == 2 %}
+  <p style="margin-bottom:0.75rem;font-size:0.9rem;">Seleccione al menos 2 disciplinas (Paso 2 — Recopilación de conocimiento):</p>
+  <p style="margin-bottom:0.75rem;"><a href="{% url 'base-datos' %}?expediente={{ expediente.pk }}&paso=2" class="btn btn-sm btn-primary">Abrir Base de Conocimiento →</a></p>
+  <div class="checkbox-grid">
+    {% for d in disciplinas %}
+    <label><input type="checkbox" name="disciplinas" value="{{ d.slug }}" {% if d.slug in disciplinas_sel %}checked{% endif %}> {{ d.nombre }}</label>
+    {% endfor %}
+  </div>
+
+  {% elif paso == 3 %}
+  <p style="margin-bottom:0.75rem;">Organización y relación interdisciplinaria (Paso 3):</p>
+
+  <h4 style="font-size:0.85rem;margin:1rem 0 0.5rem;">Zonas geográficas de intervención</h4>
+  <div class="checkbox-grid">
+    {% for z in zonas %}
+    <label><input type="checkbox" name="zonas" value="{{ z.slug }}" {% if z.slug in zonas_sel %}checked{% endif %}> {{ z.nombre }} ({{ z.prevalencia }}%)</label>
+    {% endfor %}
+  </div>
+
+  <h4 style="font-size:0.85rem;margin:1rem 0 0.5rem;">Saberes tradicionales validados</h4>
+  <div class="checkbox-grid">
+    {% for s in saberes %}
+    <label><input type="checkbox" name="saberes" value="{{ s.pk }}" {% if s.pk in saberes_sel %}checked{% endif %}> {{ s.titulo }}</label>
+    {% endfor %}
+  </div>
+
+  <h4 style="font-size:0.85rem;margin:1rem 0 0.5rem;">Cruces de referencia</h4>
+  <div class="checkbox-grid">
+    {% for c in cruces_catalogo %}
+    <label><input type="checkbox" name="cruces_catalogo" value="{{ c.pk }}" {% if c.pk|stringformat:'s' in cruces_sel %}checked{% endif %}> {{ c.concepto }}</label>
+    {% endfor %}
+  </div>
+
+  {% if cruce %}
+  <div class="alert alert-success" style="margin-top:1rem;">
+    <strong>Cruce interdisciplinario calculado</strong>
+    <p style="margin-top:0.5rem;font-size:0.9rem;">{{ cruce.sintesis }}</p>
+    <p style="font-size:0.85rem;">Complementariedad: {{ cruce.complementariedad }}%</p>
+  </div>
+  {% else %}
+  <p style="color:var(--mita-muted);margin-top:0.75rem;">Guarde este paso para calcular el cruce interdisciplinario.</p>
+  {% endif %}
+
+  {% elif paso == 4 %}
+  <div class="checkbox-grid">
+    <label><input type="checkbox" name="marco_legal" {% if artefacto_paso4.marco_legal %}checked{% endif %}> Marco legal</label>
+    <label><input type="checkbox" name="derechos_humanos" {% if artefacto_paso4.derechos_humanos %}checked{% endif %}> Derechos humanos</label>
+    <label><input type="checkbox" name="normativa_aplicable" {% if artefacto_paso4.normativa_aplicable %}checked{% endif %}> Normativa aplicable</label>
+    <label><input type="checkbox" name="recursos_tecnicos" {% if artefacto_paso4.recursos_tecnicos %}checked{% endif %}> Recursos técnicos</label>
+    <label><input type="checkbox" name="infraestructura" {% if artefacto_paso4.infraestructura %}checked{% endif %}> Infraestructura</label>
+    <label><input type="checkbox" name="plazo_ejecucion" {% if artefacto_paso4.plazo_ejecucion %}checked{% endif %}> Plazo de ejecución</label>
+    <label><input type="checkbox" name="retorno_inversion" {% if artefacto_paso4.retorno_inversion %}checked{% endif %}> Retorno de inversión</label>
+    <label><input type="checkbox" name="sostenibilidad" {% if artefacto_paso4.sostenibilidad %}checked{% endif %}> Sostenibilidad</label>
+    <label><input type="checkbox" name="beneficiarios" {% if artefacto_paso4.beneficiarios %}checked{% endif %}> Beneficiarios</label>
+    <label><input type="checkbox" name="necesidad_identificada" {% if artefacto_paso4.necesidad_identificada %}checked{% endif %}> Necesidad validada</label>
+    <label><input type="checkbox" name="impacto_esperado" {% if artefacto_paso4.impacto_esperado %}checked{% endif %}> Impacto esperado</label>
+    <label><input type="checkbox" name="enfoque_integral" {% if artefacto_paso4.enfoque_integral %}checked{% endif %}> Enfoque integral</label>
+    <label><input type="checkbox" name="adaptacion_cultural" {% if artefacto_paso4.adaptacion_cultural %}checked{% endif %}> Adaptación cultural</label>
+    <label><input type="checkbox" name="interculturalidad" {% if artefacto_paso4.interculturalidad %}checked{% endif %}> Interculturalidad</label>
+  </div>
+  <div class="form-group" style="margin-top:1rem;"><label>Presupuesto (MXN)</label><input type="number" name="presupuesto" value="{{ artefacto_paso4.presupuesto|default:0 }}"></div>
+  {% if evaluacion %}
+  <div class="alert alert-success" style="margin-top:1rem;">
+    Evaluación: <strong>{{ evaluacion.puntuacion_total }}/100</strong> — {{ evaluacion.nivel }}
+  </div>
+  {% endif %}
+
+  {% elif paso == 5 %}
+  <p style="margin-bottom:0.75rem;">Opciones generadas automáticamente (Paso 5 — Transdisciplina). Compare con el <a href="{% url 'proyecto' %}?expediente={{ expediente.pk }}">proyecto de referencia</a>.</p>
+  {% for op in opciones %}
+  <div class="card eje-card" style="margin-bottom:0.75rem;">
+    <strong>{{ op.titulo }}</strong> <span class="badge badge-info">{{ op.puntuacion|floatformat:0 }} pts</span>
+    <p style="font-size:0.9rem;margin-top:0.35rem;">{{ op.descripcion }}</p>
+    <p style="font-size:0.8rem;color:var(--mita-muted);">{{ op.fundamento }}</p>
+  </div>
+  {% empty %}
+  <p>Complete el paso 4 para generar opciones.</p>
+  {% endfor %}
+
+  {% elif paso == 6 %}
+  <p style="margin-bottom:0.75rem;">Seleccione la opción más viable. Consulte <a href="{% url 'sni' %}?expediente={{ expediente.pk }}&paso=6">perfiles SNI</a> recomendados.</p>
+  {% for op in opciones %}
+  <label class="card" style="display:block;margin-bottom:0.5rem;cursor:pointer;">
+    <input type="radio" name="opcion_id" value="{{ op.pk }}" {% if op.seleccionada %}checked{% endif %}>
+    <strong>{{ op.titulo }}</strong> ({{ op.puntuacion|floatformat:0 }} pts)
+    <p style="font-size:0.85rem;margin-top:0.25rem;">{{ op.descripcion }}</p>
+  </label>
+  {% endfor %}
+
+  {% elif paso == 7 %}
+  {% if dictamen %}
+  <div class="alert alert-success">
+    <strong>Dictamen emitido: {{ dictamen.folio }}</strong>
+    <p>Resultado: {{ dictamen.resultado }} — Puntuación: {{ dictamen.puntuacion }}/100</p>
+    {% if dictamen.pdf_archivo %}
+    <a href="/api/mita/dictamen/{{ dictamen.pk }}/pdf/" class="btn btn-primary btn-sm" style="margin-top:0.5rem;">Descargar PDF</a>
+    {% endif %}
+  </div>
+  {% if expediente.estado == 'dictaminado' %}
+  <p style="margin-top:1rem;">Inicie el seguimiento post-dictamen para monitorear el impacto.</p>
+  {% endif %}
+  {% else %}
+  <p>Revise la evaluación y emita el Dictamen de Validación MITA.</p>
+  {% if evaluacion %}
+  <p>Puntuación actual: <strong>{{ evaluacion.puntuacion_total }}/100</strong></p>
+  {% endif %}
+  {% endif %}
+  {% endif %}
+
+  <div class="form-group" style="margin-top:1.25rem;">
+    <label>Comentario (opcional)</label>
+    <textarea name="comentario" rows="2"></textarea>
+  </div>
+
+  <div style="margin-top:1.25rem;display:flex;gap:0.75rem;flex-wrap:wrap;">
+    {% if not solo_lectura %}
+    {% if paso <= 6 %}
+    <button type="submit" name="accion" value="guardar" class="btn btn-primary">Guardar paso</button>
+    {% endif %}
+    {% if paso < 7 and expediente.estado != 'dictaminado' %}
+    <button type="submit" name="accion" value="avanzar" class="btn btn-success">Avanzar al siguiente paso →</button>
+    {% endif %}
+    {% if paso == 7 and not dictamen %}
+    <button type="submit" name="accion" value="dictaminar" class="btn btn-success">Emitir Dictamen MITA</button>
+    {% endif %}
+    {% if paso == 7 and dictamen and expediente.estado == 'dictaminado' %}
+    <button type="submit" name="accion" value="seguimiento" class="btn btn-primary">Iniciar seguimiento</button>
+    {% endif %}
+    {% endif %}
+  </div>
+</form>
+
+<div class="grid grid-2" style="margin-top:1.5rem;">
+  <div class="card">
+    <h3>Historial de transiciones</h3>
+    {% for t in historial %}
+    <div style="padding:0.5rem 0;border-bottom:1px solid var(--mita-border);font-size:0.85rem;">
+      <strong>{{ t.creado_en|date:"d/m/Y H:i" }}</strong> — {{ t.accion }}
+      {% if t.paso_anterior %}Paso {{ t.paso_anterior }}→{{ t.paso_nuevo }}{% endif %}
+      {% if t.comentario %}<br><em>{{ t.comentario }}</em>{% endif %}
+    </div>
+    {% empty %}
+    <p style="color:var(--mita-muted);">Sin transiciones registradas.</p>
+    {% endfor %}
+  </div>
+  <div class="card">
+    <h3>Contexto territorial</h3>
+    {% for z in zonas %}
+    <p style="font-size:0.85rem;"><strong>{{ z.nombre }}</strong> — Prevalencia {{ z.prevalencia }}%</p>
+    {% endfor %}
+    <a href="{% url 'mapa' %}" style="font-size:0.85rem;">Ver mapa completo →</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+<div class="proceso-modulo-panel">
+  <div class="proceso-modulo-header">
+    <span class="badge badge-info">{{ ctx.config.rf }}</span>
+    <span class="badge badge-warning">Módulo: {{ ctx.config.modulo }}</span>
+    <span class="badge badge-info">Rol: {{ ctx.config.rol }}</span>
+  </div>
+
+  <h4 style="font-size:0.9rem;margin:0.75rem 0 0.5rem;">Acciones del paso</h4>
+  <ul class="proceso-acciones">
+    {% for accion in ctx.acciones %}
+    <li>{{ accion }}</li>
+    {% endfor %}
+  </ul>
+
+  {% if ctx.links %}
+  <h4 style="font-size:0.9rem;margin:1rem 0 0.5rem;">Herramientas de la plataforma</h4>
+  <div class="proceso-herramientas">
+    {% for link in ctx.links %}
+    <a href="{% url link.name %}{% if expediente %}?expediente={{ expediente.pk }}&paso={{ paso }}{% endif %}"
+       class="btn btn-sm btn-primary">{{ link.label }} →</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <p style="font-size:0.8rem;color:var(--mita-muted);margin-top:0.75rem;">
+    <strong>Resultado esperado:</strong> {{ ctx.resultado_esperado }}
+  </p>
+</div>

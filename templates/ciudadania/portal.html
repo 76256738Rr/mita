@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Ventanilla Ciudadana — MITA{% endblock %}
+{% block page_title %}Ventanilla Ciudadana{% endblock %}
+
+{% block content %}
+<div class="alert alert-info">
+  Registre su problemática o proyecto ciudadano en el <strong>Estado de México</strong>.
+  El asistente IA le guiará y el mapa mostrará centros de salud, escuelas u oficinas según el eje seleccionado.
+</div>
+
+<div class="grid grid-2" style="margin-bottom:1.5rem;">
+  <div class="card">
+    <h3>Registrar nueva problemática</h3>
+    <p style="font-size:0.9rem;margin:0.75rem 0;">Seleccione un eje temático y complete los datos con ayuda del asistente IA.</p>
+    <a href="{% url 'ciudadania-nuevo' %}" class="btn btn-primary">Nuevo reporte →</a>
+  </div>
+  <div class="card stat-card">
+    <div class="value">{{ reportes|length }}</div>
+    <div class="label">Mis reportes registrados</div>
+  </div>
+</div>
+
+<h3 style="margin-bottom:0.75rem;color:var(--mita-primary);">Ejes temáticos</h3>
+<div class="ejes-grid" style="margin-bottom:1.5rem;">
+  {% for eje in ejes %}
+  <a href="{% url 'ciudadania-nuevo' %}?eje={{ eje.slug }}" class="eje-card-item" style="border-left-color:{{ eje.color }};">
+    <span class="eje-icon">{{ eje.icono }}</span>
+    <strong>{{ eje.nombre }}</strong>
+    <p>{{ eje.descripcion|truncatechars:90 }}</p>
+  </a>
+  {% endfor %}
+</div>
+
+{% if reportes %}
+<div class="card">
+  <h3>Mis reportes</h3>
+  <table>
+    <thead>
+      <tr><th>Número de control</th><th>Eje</th><th>Título</th><th>Estado</th><th>Fecha</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for r in reportes %}
+      <tr>
+        <td><strong>{{ r.numero_control }}</strong></td>
+        <td>{{ r.get_eje_display }}</td>
+        <td>{{ r.titulo|truncatechars:40 }}</td>
+        <td><span class="badge badge-info">{{ r.get_estado_display }}</span></td>
+        <td>{{ r.creado_en|date:"d/m/Y" }}</td>
+        <td><a href="{% url 'ciudadania-detalle' r.pk %}" class="btn btn-sm btn-primary">Ver / Chat</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

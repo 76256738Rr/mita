@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% block title %}{{ reporte.numero_control }} — Ventanilla Ciudadana{% endblock %}
+{% block page_title %}{{ reporte.numero_control }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+.mapa-ciudadania { height:320px; border-radius:8px; border:1px solid var(--mita-border); }
+.lista-ubicaciones { list-style:none; padding:0; max-height:180px; overflow-y:auto; }
+.lista-ubicaciones li { font-size:0.8rem; padding:0.45rem 0; border-bottom:1px solid var(--mita-border); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="alert alert-success">
+  <strong>Número de control:</strong> {{ reporte.numero_control }} —
+  Eje: {{ reporte.get_eje_display }} —
+  Estado: {{ reporte.get_estado_display }}
+</div>
+
+<div class="grid grid-2" style="margin-bottom:1.25rem;">
+  <div class="card">
+    <h3>Su reporte</h3>
+    <p><strong>{{ reporte.titulo }}</strong></p>
+    <p style="font-size:0.9rem;margin:0.5rem 0;">{{ reporte.descripcion }}</p>
+    {% if reporte.municipio %}<p style="font-size:0.85rem;"><strong>Municipio:</strong> {{ reporte.municipio }}</p>{% endif %}
+    {% if reporte.datos_captura.nombre_completo %}
+    <p style="font-size:0.85rem;"><strong>Contacto:</strong> {{ reporte.datos_captura.nombre_completo }}
+      · {{ reporte.datos_captura.celular }} · {{ reporte.datos_captura.correo }}</p>
+    {% endif %}
+    {% if reporte.eje == 'salud' %}
+    <p style="font-size:0.85rem;"><strong>Enfermedad:</strong> {{ reporte.datos_captura.tipo_enfermedad|default:"—" }}</p>
+    {% if reporte.datos_captura.centro_salud_nombre %}
+    <p style="font-size:0.85rem;"><strong>Centro de salud:</strong> {{ reporte.datos_captura.centro_salud_nombre }}
+      {% if reporte.datos_captura.centro_salud_direccion %}<br><span style="color:var(--mita-muted);">{{ reporte.datos_captura.centro_salud_direccion }}</span>{% endif %}
+    </p>
+    {% endif %}
+    {% if reporte.datos_captura.medicamentos %}
+    <p style="font-size:0.85rem;"><strong>Medicamentos:</strong> {{ reporte.datos_captura.medicamentos|join:", " }}</p>
+    {% endif %}
+    {% endif %}
+    {% if reporte.eje == 'empleo' and reporte.datos_captura.edad %}
+    <p style="font-size:0.85rem;"><strong>Perfil laboral:</strong> {{ reporte.datos_captura.edad }} años
+      {% if reporte.datos_captura.experiencia %} · {{ reporte.datos_captura.experiencia }} años de experiencia{% else %} · sin experiencia registrada{% endif %}
+      {% if reporte.datos_captura.tipo_trabajo_buscado %} · busca: {{ reporte.datos_captura.tipo_trabajo_buscado }}{% endif %}
+    </p>
+    {% endif %}
+    {% if reporte.fecha_estimada_atencion %}
+    <p style="font-size:0.85rem;"><strong>Fecha estimada de atención:</strong> {{ reporte.fecha_estimada_atencion|date:"d/m/Y" }}</p>
+    {% endif %}
+  </div>
+  <div class="card">
+    <h3>Dependencia turnada</h3>
+    <p style="font-size:0.95rem;font-weight:600;color:var(--mita-secondary);">{{ reporte.dependencia_principal }}</p>
+    <p style="font-size:0.85rem;margin-top:0.5rem;">{{ reporte.respuesta_dependencia }}</p>
+    <h4 style="font-size:0.85rem;margin-top:1rem;">Dependencias involucradas</h4>
+    <ul style="font-size:0.85rem;padding-left:1.2rem;">
+      {% for d in reporte.dependencias_involucradas %}
+      <li><strong>{{ d.nombre }}</strong> — {{ d.rol }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+{% if reporte.eje == 'empleo' and reporte.datos_captura.recomendaciones_ia %}
+<div class="card" style="margin-bottom:1.25rem;border-left:4px solid var(--mita-warning);">
+  <h3>Oportunidades recomendadas por IA</h3>
+  <ul style="font-size:0.9rem;padding-left:1.2rem;margin-top:0.5rem;">
+    {% for rec in reporte.datos_captura.recomendaciones_ia %}
+    <li>{{ rec }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+{% if ubicaciones %}
+<div class="card" style="margin-bottom:1.25rem;">
+  {% include 'ciudadania/_mapa_ubicaciones.html' with eje_cfg=reporte.eje_config mapa_filtrar_municipio=False %}
+</div>
+{% endif %}
+
+<div class="card" style="margin-bottom:1.25rem;">
+  <h3>Ruta de turnado</h3>
+  <div class="ruta-tramite">
+    {% for paso in reporte.ruta_tramite %}
+    <div class="ruta-paso ruta-{{ paso.estado }}">
+      <div class="ruta-orden">{{ paso.orden }}</div>
+      <div>
+        <strong>{{ paso.nombre }}</strong> — {{ paso.dependencia }}
+        <p style="font-size:0.8rem;color:var(--mita-muted);margin:0.15rem 0 0;">{{ paso.descripcion }}</p>
+      </div>
+      <span class="badge badge-{% if paso.estado == 'completado' %}success{% elif paso.estado == 'activo' %}warning{% else %}info{% endif %}">{{ paso.estado }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card chat-panel">
+  <div class="chat-header">
+    <span class="chat-dep-badge">DEP</span>
+    <div>
+      <strong>Chat con {{ reporte.dependencia_principal }}</strong>
+      <p style="font-size:0.75rem;color:var(--mita-muted);margin:0;">Consulte plazos, proceso de atención o motivos de resolución</p>
+    </div>
+  </div>
+  <div class="chat-messages" id="chat-dep-messages">
+    {% for m in mensajes %}
+    <div class="chat-msg chat-msg-{{ m.tipo_autor }}">
+      <span class="chat-author">{{ m.autor_nombre }}</span>
+      <p>{{ m.contenido|linebreaksbr }}</p>
+      <span class="chat-time">{{ m.creado_en|date:"d/m/Y H:i" }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="chat-input-row">
+    <input type="text" id="chat-dep-input" placeholder="Escriba su mensaje a la dependencia..." autocomplete="off">
+    <button type="button" class="btn btn-primary btn-sm" id="chat-dep-send">Enviar</button>
+  </div>
+  <p style="font-size:0.75rem;color:var(--mita-muted);margin-top:0.5rem;">
+    Ejemplos: "¿Cuándo atenderán mi caso?", "¿Cómo se resolverá?", "¿Por qué no procede?"
+  </p>
+</div>
+
+<p style="margin-top:1rem;"><a href="{% url 'ciudadania-portal' %}">← Volver a mis reportes</a></p>
+{% endblock %}
+
+{% block extra_js %}
+{% if ubicaciones %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+  const ubicaciones = {{ ubicaciones_json|safe }};
+  const ejeSlug = '{{ reporte.eje }}';
+  const centroSeleccionado = '{{ centro_salud_slug|default:"" }}';
+  const iconos = { salud:'#3182ce', educacion:'#805ad5', empleo:'#d69e2e', seguridad:'#2c5282', economia:'#276749', corrupcion:'#c53030' };
+  const map = L.map('mapa-ciudadania').setView([19.35, -99.5], 9);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM — Edomex' }).addTo(map);
+  const ul = document.getElementById('lista-ubicaciones');
+  const color = iconos[ejeSlug] || '#3182ce';
+  ubicaciones.forEach(u => {
+    const esSeleccionado = centroSeleccionado && u.slug === centroSeleccionado;
+    L.circleMarker([u.lat, u.lng], {
+      radius: esSeleccionado ? 13 : 9,
+      fillColor: esSeleccionado ? '#e53e3e' : color,
+      color: '#fff', weight: 2, fillOpacity: 0.9
+    }).addTo(map).bindPopup(`<strong>${u.nombre}</strong>${esSeleccionado ? ' <em>(su centro)</em>' : ''}<br>${u.tipo}<br>${u.direccion}`);
+    if (ul) {
+      const li = document.createElement('li');
+      li.innerHTML = `<strong>${u.nombre}</strong>${esSeleccionado ? ' <span style="color:#e53e3e">● seleccionado</span>' : ''} — ${u.municipio}<br><span style="color:var(--mita-muted)">${u.tipo}</span>`;
+      ul.appendChild(li);
+    }
+  });
+  if (ubicaciones.length) map.fitBounds(L.latLngBounds(ubicaciones.map(u => [u.lat, u.lng])).pad(0.15));
+})();
+</script>
+{% endif %}
+<script>
+(function(){
+  const csrf = '{{ csrf_token }}';
+  const messagesEl = document.getElementById('chat-dep-messages');
+  const inputEl = document.getElementById('chat-dep-input');
+  const sendBtn = document.getElementById('chat-dep-send');
+  const autorCiudadano = '{{ user.get_full_name|default:user.username }}';
+
+  function appendMsg(tipo, autor, texto) {
+    const div = document.createElement('div');
+    div.className = 'chat-msg chat-msg-' + tipo;
+    div.innerHTML = '<span class="chat-author">' + autor + '</span><p>' + texto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>') + '</p>';
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  sendBtn.addEventListener('click', async () => {
+    const msg = inputEl.value.trim();
+    if (!msg) return;
+    appendMsg('ciudadano', autorCiudadano, msg);
+    inputEl.value = '';
+    sendBtn.disabled = true;
+    try {
+      const res = await fetch('{% url "ciudadania-chat" reporte.pk %}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+        body: JSON.stringify({ mensaje: msg })
+      });
+      const data = await res.json();
+      if (data.mensajes) {
+        const dep = data.mensajes.find(m => m.tipo === 'dependencia');
+        if (dep) appendMsg('dependencia', dep.autor, dep.contenido);
+      }
+    } finally {
+      sendBtn.disabled = false;
+      inputEl.focus();
+    }
+  });
+
+  inputEl.addEventListener('keydown', e => { if (e.key === 'Enter') sendBtn.click(); });
+})();
+</script>
+{% endblock %}

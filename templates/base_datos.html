@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Base de Conocimiento — MITA{% endblock %}
+{% block page_title %}Gestión de Información Validada (RF-01){% endblock %}
+
+{% block content %}
+{% if modo_seleccion %}
+<div class="alert alert-info">
+  <strong>Paso 2 del proceso operativo</strong> — Recopilación de conocimiento para
+  <a href="{% url 'expediente-detalle' expediente.pk %}">{{ expediente.folio }}</a>.
+  Seleccione disciplinas en el expediente y guarde el paso.
+</div>
+{% endif %}
+
+<p style="margin-bottom:1rem;color:var(--mita-muted);">
+  Repositorio central con {{ disciplinas.count }} disciplinas validadas de fuentes oficiales (SEDESA, INEGI, SNI, CECyTEM).
+</p>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Disciplina</th>
+        <th>Área</th>
+        <th>Grupo</th>
+        <th>Dato Clave</th>
+        <th>Confiabilidad</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in disciplinas %}
+      <tr>
+        <td><strong>{{ d.nombre }}</strong><br><small style="color:var(--mita-muted);">{{ d.aportacion|truncatechars:80 }}</small></td>
+        <td>{{ d.area }}</td>
+        <td><span class="badge badge-info">{{ d.grupo }}</span></td>
+        <td style="font-size:0.85rem;">{{ d.dato_clave|truncatechars:100 }}</td>
+        <td>{{ d.nivel_confiabilidad }}%</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5">No hay disciplinas. Ejecute: python manage.py seed_mita</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if modo_seleccion %}
+<p style="margin-top:1rem;">
+  <a href="{% url 'expediente-detalle' expediente.pk %}" class="btn btn-primary">← Volver al expediente (Paso 2)</a>
+</p>
+{% endif %}
+{% endblock %}

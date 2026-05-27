@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block title %}Motor Analógico — MITA{% endblock %}
+{% block page_title %}Motor de Analogía (RF-06){% endblock %}
+
+{% block content %}
+<p style="margin-bottom:1rem;color:var(--mita-muted);">
+  Algoritmos propietarios que evalúan coherencia, legalidad, viabilidad, impacto y equidad.
+  Detecta riesgos sesgado, radical y divagante.
+</p>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h3>Evaluar Propuesta</h3>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Título de la propuesta</label>
+        <input type="text" name="titulo" required placeholder="Nombre de la iniciativa pública">
+      </div>
+      <div class="form-group">
+        <label>Descripción</label>
+        <textarea name="descripcion" rows="3" placeholder="Descripción de la propuesta"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Solicitante / Dependencia</label>
+        <input type="text" name="solicitante" placeholder="Dependencia del Gobierno del Estado de México">
+      </div>
+      <div class="form-group">
+        <label>Presupuesto (MXN)</label>
+        <input type="number" name="presupuesto" min="0" step="1000" value="0">
+      </div>
+
+      <h4 style="margin:1rem 0 0.5rem;font-size:0.9rem;">Legalidad</h4>
+      <div class="checkbox-grid">
+        <label><input type="checkbox" name="marco_legal"> Marco legal definido</label>
+        <label><input type="checkbox" name="derechos_humanos"> Derechos humanos</label>
+        <label><input type="checkbox" name="normativa_aplicable"> Normativa aplicable</label>
+      </div>
+
+      <h4 style="margin:1rem 0 0.5rem;font-size:0.9rem;">Viabilidad</h4>
+      <div class="checkbox-grid">
+        <label><input type="checkbox" name="recursos_tecnicos"> Recursos técnicos</label>
+        <label><input type="checkbox" name="infraestructura"> Infraestructura</label>
+        <label><input type="checkbox" name="plazo_ejecucion"> Plazo de ejecución</label>
+        <label><input type="checkbox" name="retorno_inversion"> Retorno de inversión</label>
+        <label><input type="checkbox" name="sostenibilidad"> Sostenibilidad</label>
+      </div>
+
+      <h4 style="margin:1rem 0 0.5rem;font-size:0.9rem;">Pertinencia e Integración</h4>
+      <div class="checkbox-grid">
+        <label><input type="checkbox" name="beneficiarios"> Beneficiarios identificados</label>
+        <label><input type="checkbox" name="necesidad_identificada"> Necesidad validada</label>
+        <label><input type="checkbox" name="impacto_esperado"> Impacto esperado</label>
+        <label><input type="checkbox" name="enfoque_integral"> Enfoque integral</label>
+        <label><input type="checkbox" name="adaptacion_cultural"> Adaptación cultural</label>
+        <label><input type="checkbox" name="interculturalidad"> Interculturalidad</label>
+      </div>
+
+      <h4 style="margin:1rem 0 0.5rem;font-size:0.9rem;">Ejes de acción (1-6)</h4>
+      <div class="checkbox-grid">
+        {% for i in "123456" %}
+        <label><input type="checkbox" name="ejes_accion" value="{{ i }}"> Eje {{ i }}</label>
+        {% endfor %}
+      </div>
+
+      <div style="margin-top:1.5rem;display:flex;gap:0.75rem;">
+        <button type="submit" class="btn btn-primary">Evaluar analogía</button>
+        <button type="submit" name="generar_dictamen" value="1" class="btn btn-success">Generar Dictamen MITA</button>
+      </div>
+    </form>
+  </div>
+
+  <div>
+    {% if resultado %}
+    <div class="card" style="margin-bottom:1rem;">
+      <h3>Resultado de Evaluación</h3>
+      <p style="font-size:1.5rem;font-weight:700;color:var(--mita-secondary);">
+        {{ resultado.puntuacion_total }}/100
+      </p>
+      <span class="badge {% if resultado.aprobado %}badge-success{% else %}badge-warning{% endif %}">
+        {{ resultado.nivel }}
+      </span>
+      {% if resultado.fronesis %}
+      <span class="badge badge-success" style="margin-left:0.5rem;">Fronesis equilibrada</span>
+      {% endif %}
+
+      <h4 style="margin-top:1rem;font-size:0.9rem;">Criterios</h4>
+      {% for nombre, valor in resultado.criterios.items %}
+      <div style="margin-top:0.5rem;">
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem;">
+          <span>{{ nombre|title }}</span>
+          <span>{{ valor|floatformat:0 }}%</span>
+        </div>
+        <div class="progress-bar"><div class="fill" style="width:{{ valor }}%"></div></div>
+      </div>
+      {% endfor %}
+
+      {% if resultado.riesgos %}
+      <h4 style="margin-top:1rem;font-size:0.9rem;">Riesgos Detectados</h4>
+      {% for riesgo in resultado.riesgos %}
+      <p style="font-size:0.85rem;"><span class="badge badge-danger">{{ riesgo.tipo }}</span> {{ riesgo.descripcion }}</p>
+      {% endfor %}
+      {% endif %}
+
+      {% if resultado.recomendaciones %}
+      <h4 style="margin-top:1rem;font-size:0.9rem;">Recomendaciones</h4>
+      <ul style="padding-left:1.25rem;font-size:0.85rem;">
+        {% for rec in resultado.recomendaciones %}
+        <li>{{ rec }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if dictamen %}
+    <div class="card">
+      <h3>Dictamen de Validación MITA</h3>
+      <p><strong>Folio:</strong> {{ dictamen.folio }}</p>
+      <p><strong>Resultado:</strong>
+        <span class="badge {% if dictamen.resultado == 'APROBADO' %}badge-success{% else %}badge-warning{% endif %}">
+          {{ dictamen.resultado }}
+        </span>
+      </p>
+      <p style="font-size:0.85rem;margin-top:0.5rem;">{{ dictamen.validez }}</p>
+      <p style="font-size:0.8rem;color:var(--mita-muted);margin-top:0.5rem;">
+        Use la API POST /api/mita/dictamen/ para persistir y generar PDF.
+      </p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

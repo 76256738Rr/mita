@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha Técnica — Plataforma MITA</title>
+  <style>
+    :root {
+      --primary: #1a365d;
+      --secondary: #2c5282;
+      --accent: #3182ce;
+      --muted: #718096;
+      --border: #e2e8f0;
+      --bg: #f7fafc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #2d3748;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 2.5rem 4rem;
+      background: #fff;
+    }
+    .cover {
+      text-align: center;
+      padding: 3rem 1rem 2.5rem;
+      border-bottom: 3px solid var(--primary);
+      margin-bottom: 2.5rem;
+    }
+    .cover h1 { font-size: 1.85rem; color: var(--primary); margin-bottom: 0.35rem; }
+    .cover .subtitle { font-size: 1rem; color: var(--secondary); margin-bottom: 1.5rem; }
+    .cover .meta { font-size: 0.9rem; color: var(--muted); }
+    h2 {
+      color: var(--primary);
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0.35rem;
+      margin-top: 2.25rem;
+    }
+    h3 { color: var(--secondary); margin-top: 1.35rem; }
+    p, li { font-size: 0.93rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.85rem 0 1.25rem;
+      font-size: 0.88rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.7rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: var(--bg); color: var(--primary); }
+    pre, code {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.84rem;
+    }
+    pre {
+      background: #1a202c;
+      color: #e2e8f0;
+      padding: 1rem 1.15rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 0.75rem 0 1.25rem;
+      line-height: 1.45;
+    }
+    code {
+      background: var(--bg);
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      color: #2d3748;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 0.35rem 1rem;
+      margin: 1rem 0 1.5rem;
+      font-size: 0.9rem;
+    }
+    .info-grid dt { font-weight: 600; color: var(--primary); }
+    .info-grid dd { margin: 0; }
+    .note {
+      background: #ebf8ff;
+      border-left: 4px solid var(--accent);
+      padding: 0.8rem 1rem;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    .warning {
+      background: #fffaf0;
+      border-left: 4px solid #dd6b20;
+      padding: 0.8rem 1rem;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    @media print {
+      body { padding: 1rem; max-width: none; }
+      pre { white-space: pre-wrap; word-break: break-all; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>Ficha Técnica del Proyecto</h1>
+  <p class="subtitle">Plataforma MITA — Multi-Intercultural-Transdisciplina Analógica</p>
+  <p class="meta">
+    Gobierno del Estado de México · Secretaría de Salud (SEDESA)<br>
+    Versión 1.0.0 · Mayo 2026
+  </p>
+</div>
+
+<h2>1. Identificación</h2>
+<dl class="info-grid">
+  <dt>Nombre del sistema</dt>
+  <dd>Plataforma MITA</dd>
+  <dt>Siglas</dt>
+  <dd>MITA (Multi-Intercultural-Transdisciplina Analógica)</dd>
+  <dt>Entidad responsable</dt>
+  <dd>Gobierno del Estado de México — SEDESA</dd>
+  <dt>Proyecto de referencia</dt>
+  <dd>EDOMEX DIABETES 2026–2032</dd>
+  <dt>Versión</dt>
+  <dd>1.0.0</dd>
+  <dt>Repositorio local</dt>
+  <dd><code>MI/</code></dd>
+  <dt>Documento base</dt>
+  <dd>Requisitos funcionales RF-01 a RF-11 (<code>mita.docx</code>)</dd>
+</dl>
+
+<h2>2. Descripción general</h2>
+<p>
+  Sistema web de gestión del conocimiento y buen gobierno que integra bases interdisciplinarias,
+  análisis geoespacial, motor analógico de evaluación, perfiles del Sistema Nacional de Investigadores (SNI),
+  análisis legislativo y emisión de dictámenes oficiales en un flujo operativo de 7 pasos con trazabilidad
+  y control por roles.
+</p>
+
+<h3>Objetivos técnicos</h3>
+<ul>
+  <li>Centralizar información validada de múltiples disciplinas y fuentes oficiales.</li>
+  <li>Orquestar el proceso MITA mediante expedientes, tareas y transiciones auditables.</li>
+  <li>Generar evaluaciones analógicas y dictámenes de validación en PDF.</li>
+  <li>Exponer una API REST para integración con otros sistemas gubernamentales.</li>
+</ul>
+
+<h2>3. Stack tecnológico</h2>
+<table>
+  <thead><tr><th>Capa</th><th>Tecnología</th><th>Versión / Notas</th></tr></thead>
+  <tbody>
+    <tr><td>Lenguaje</td><td>Python</td><td>3.11+</td></tr>
+    <tr><td>Framework web</td><td>Django</td><td>5.x (requirements: 5.1.5)</td></tr>
+    <tr><td>API REST</td><td>Django REST Framework</td><td>3.15.2</td></tr>
+    <tr><td>CORS</td><td>django-cors-headers</td><td>4.6.0</td></tr>
+    <tr><td>Base de datos (dev)</td><td>SQLite</td><td><code>db.sqlite3</code></td></tr>
+    <tr><td>Base de datos (prod)</td><td>PostgreSQL</td><td>vía <code>DATABASE_URL</code> + psycopg2-binary</td></tr>
+    <tr><td>PDF</td><td>ReportLab</td><td>4.2.5 — Dictámenes MITA</td></tr>
+    <tr><td>Imágenes</td><td>Pillow</td><td>11.1.0</td></tr>
+    <tr><td>Frontend</td><td>Django Templates + CSS</td><td>Leaflet.js en mapa geoespacial</td></tr>
+    <tr><td>Servidor (prod)</td><td>Gunicorn / WSGI</td><td><code>mita_platform.wsgi</code></td></tr>
+    <tr><td>Idioma / zona</td><td>es-mx</td><td>America/Mexico_City</td></tr>
+  </tbody>
+</table>
+
+<h2>4. Arquitectura</h2>
+<p>Arquitectura monolítica modular en Django con separación por apps de dominio:</p>
+
+<pre>
+┌─────────────────────────────────────────────────────────────┐
+│                    Navegador / Cliente API                  │
+└───────────────────────────┬─────────────────────────────────┘
+                            │
+┌───────────────────────────▼─────────────────────────────────┐
+│  mita_platform (URLs, settings, WSGI)                       │
+├─────────────────────────────────────────────────────────────┤
+│  core          → Auth, permisos, vistas web, workflow UI    │
+│  mita_engine   → Motor analógico, expedientes, dictámenes   │
+│  conocimiento  → Disciplinas y fuentes (RF-01)              │
+│  geoespacial   → Zonas y capas SIG (RF-07)                  │
+│  interculturalidad → Saberes tradicionales (RF-04)          │
+│  sni           → Perfiles investigadores (RF-02)              │
+│  legislacion   → Impacto normativo (RF-10)                  │
+│  proyectos     → Proyecto referencia y lecciones            │
+│  reportes      → Indicadores de impacto (RF-11)             │
+│  api           → Endpoints REST                             │
+└───────────────────────────┬─────────────────────────────────┘
+                            │
+┌───────────────────────────▼─────────────────────────────────┐
+│  SQLite (dev) / PostgreSQL (prod)  +  media/ (PDF, archivos)│
+└─────────────────────────────────────────────────────────────┘
+</pre>
+
+<h2>5. Módulos y requisitos funcionales</h2>
+<table>
+  <thead><tr><th>RF</th><th>App Django</th><th>Funcionalidad</th></tr></thead>
+  <tbody>
+    <tr><td>RF-01</td><td><code>conocimiento</code></td><td>Gestión de información validada y fuentes oficiales</td></tr>
+    <tr><td>RF-02</td><td><code>conocimiento</code>, <code>sni</code></td><td>Motor multi-interdisciplina y perfiles SNI</td></tr>
+    <tr><td>RF-03</td><td><code>mita_engine</code></td><td>Cruces interdisciplinarios y sinergias</td></tr>
+    <tr><td>RF-04</td><td><code>interculturalidad</code></td><td>Saberes tradicionales y comparador cultural</td></tr>
+    <tr><td>RF-05</td><td><code>mita_engine</code></td><td>Síntesis transdisciplinaria y opciones de solución</td></tr>
+    <tr><td>RF-06</td><td><code>mita_engine</code></td><td>Motor analógico y generación de dictámenes PDF</td></tr>
+    <tr><td>RF-07</td><td><code>geoespacial</code></td><td>SIG, hotspots y capas geográficas</td></tr>
+    <tr><td>RF-08</td><td><code>mita_engine</code>, <code>core</code></td><td>Flujo de expedientes, workflow y auditoría</td></tr>
+    <tr><td>RF-09</td><td><code>api</code></td><td>Búsqueda semántica básica</td></tr>
+    <tr><td>RF-10</td><td><code>legislacion</code></td><td>Análisis de impacto normativo</td></tr>
+    <tr><td>RF-11</td><td><code>reportes</code></td><td>Dashboards e indicadores de impacto</td></tr>
+  </tbody>
+</table>
+
+<h2>6. Proceso operativo (7 pasos)</h2>
+<table>
+  <thead><tr><th>Paso</th><th>Nombre</th><th>Rol responsable</th><th>Módulo vinculado</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Definición del asunto</td><td>Dependencia</td><td>Expedientes</td></tr>
+    <tr><td>2</td><td>Recopilación de conocimiento</td><td>Analista</td><td>Base de Conocimiento</td></tr>
+    <tr><td>3</td><td>Organización y relación</td><td>Analista</td><td>Mapa + Interculturalidad</td></tr>
+    <tr><td>4</td><td>Análisis y analogía</td><td>Analista</td><td>Motor Analógico</td></tr>
+    <tr><td>5</td><td>Generación de opciones</td><td>Analista</td><td>Proyecto Demo</td></tr>
+    <tr><td>6</td><td>Evaluación y selección</td><td>Investigador SNI</td><td>Perfiles SNI</td></tr>
+    <tr><td>7</td><td>Dictamen de validación</td><td>Administrador</td><td>Dictámenes + Reportes</td></tr>
+  </tbody>
+</table>
+
+<h2>7. Roles de usuario</h2>
+<table>
+  <thead><tr><th>Rol</th><th>Usuario demo</th><th>Permisos principales</th></tr></thead>
+  <tbody>
+    <tr><td>Dependencia Gubernamental</td><td><code>dependencia</code></td><td>Registro de expedientes (Paso 1)</td></tr>
+    <tr><td>Analista MITA</td><td><code>analista</code></td><td>Pasos 2–5, cruces, evaluación analógica</td></tr>
+    <tr><td>Investigador SNI</td><td><code>investigador</code></td><td>Selección de opción (Paso 6)</td></tr>
+    <tr><td>Administrador</td><td><code>admin</code></td><td>Emisión de dictamen (Paso 7), panel Django</td></tr>
+    <tr><td>Auditor</td><td><code>auditor</code></td><td>Solo lectura: trazabilidad, dictámenes, reportes</td></tr>
+  </tbody>
+</table>
+<p>Contraseña demo para todos los usuarios: <strong><code>mita2026</code></strong></p>
+
+<h2>8. Rutas web principales</h2>
+<table>
+  <thead><tr><th>Ruta</th><th>Descripción</th></tr></thead>
+  <tbody>
+    <tr><td><code>/</code></td><td>Dashboard</td></tr>
+    <tr><td><code>/login/</code></td><td>Inicio de sesión por rol</td></tr>
+    <tr><td><code>/bandeja/</code></td><td>Bandeja de tareas pendientes</td></tr>
+    <tr><td><code>/expedientes/</code></td><td>Listado de expedientes</td></tr>
+    <tr><td><code>/expedientes/nuevo/</code></td><td>Alta de expediente (Paso 1)</td></tr>
+    <tr><td><code>/expedientes/&lt;id&gt;/</code></td><td>Detalle y gestión paso a paso</td></tr>
+    <tr><td><code>/proceso/</code></td><td>Vista kanban del proceso operativo</td></tr>
+    <tr><td><code>/base-datos/</code></td><td>Base de Conocimiento</td></tr>
+    <tr><td><code>/mapa/</code></td><td>Mapa geoespacial</td></tr>
+    <tr><td><code>/analogia/</code></td><td>Motor analógico</td></tr>
+    <tr><td><code>/dictamenes/</code></td><td>Dictámenes de validación</td></tr>
+    <tr><td><code>/sni/</code></td><td>Perfiles SNI</td></tr>
+    <tr><td><code>/reportes/</code></td><td>Indicadores e impacto</td></tr>
+    <tr><td><code>/admin/</code></td><td>Administración Django</td></tr>
+    <tr><td><code>/api/</code></td><td>API REST</td></tr>
+  </tbody>
+</table>
+
+<h2>9. API REST (selección)</h2>
+<table>
+  <thead><tr><th>Endpoint</th><th>Método</th><th>Descripción</th></tr></thead>
+  <tbody>
+    <tr><td><code>/api/health/</code></td><td>GET</td><td>Estado del servicio</td></tr>
+    <tr><td><code>/api/dashboard/</code></td><td>GET</td><td>Estadísticas generales</td></tr>
+    <tr><td><code>/api/expedientes/</code></td><td>GET/POST</td><td>Listar / crear expedientes</td></tr>
+    <tr><td><code>/api/expedientes/&lt;id&gt;/avanzar/</code></td><td>POST</td><td>Avanzar al siguiente paso</td></tr>
+    <tr><td><code>/api/bandeja/</code></td><td>GET</td><td>Tareas pendientes</td></tr>
+    <tr><td><code>/api/mita/analogia/</code></td><td>POST</td><td>Evaluación analógica</td></tr>
+    <tr><td><code>/api/mita/dictamen/</code></td><td>POST</td><td>Generar dictamen + PDF</td></tr>
+    <tr><td><code>/api/buscar/?q=</code></td><td>GET</td><td>Búsqueda semántica</td></tr>
+    <tr><td><code>/api/reportes/indicadores/</code></td><td>GET</td><td>Indicadores de impacto</td></tr>
+  </tbody>
+</table>
+
+<h2>10. Variables de entorno</h2>
+<table>
+  <thead><tr><th>Variable</th><th>Descripción</th><th>Valor por defecto</th></tr></thead>
+  <tbody>
+    <tr><td><code>DJANGO_SECRET_KEY</code></td><td>Clave secreta Django</td><td>Clave de desarrollo (cambiar en prod)</td></tr>
+    <tr><td><code>DJANGO_DEBUG</code></td><td>Modo depuración</td><td><code>True</code></td></tr>
+    <tr><td><code>DJANGO_ALLOWED_HOSTS</code></td><td>Hosts permitidos</td><td><code>localhost,127.0.0.1,testserver</code></td></tr>
+    <tr><td><code>DATABASE_URL</code></td><td>Activa PostgreSQL si está definida</td><td>No definida → SQLite</td></tr>
+    <tr><td><code>DB_NAME</code>, <code>DB_USER</code>, <code>DB_PASSWORD</code>, <code>DB_HOST</code>, <code>DB_PORT</code></td><td>Conexión PostgreSQL</td><td>—</td></tr>
+    <tr><td><code>CORS_ALLOWED_ORIGINS</code></td><td>Orígenes CORS permitidos</td><td><code>localhost:5173</code></td></tr>
+    <tr><td><code>MITA_SCREENSHOT_URL</code></td><td>URL base para capturas del manual</td><td><code>http://127.0.0.1:8888</code></td></tr>
+  </tbody>
+</table>
+
+<h2>11. Requisitos del sistema</h2>
+<ul>
+  <li>Sistema operativo: Windows 10+, Linux o macOS.</li>
+  <li>Python 3.11 o superior.</li>
+  <li>pip y entorno virtual recomendado.</li>
+  <li>Navegador moderno (Chrome, Edge, Firefox).</li>
+  <li>PostgreSQL 13+ (solo producción).</li>
+  <li>~500 MB de espacio en disco (incluye dependencias y base SQLite).</li>
+</ul>
+
+<h2>12. Comandos para correr el sistema</h2>
+
+<h3>12.1 Instalación inicial (desarrollo)</h3>
+<pre>cd "c:\Users\rocio\OneDrive\Documents\GitHub\MI"
+
+# Crear y activar entorno virtual (Windows)
+python -m venv venv
+venv\Scripts\activate
+
+# Instalar dependencias
+pip install -r requirements.txt
+
+# Aplicar migraciones
+python manage.py migrate
+
+# Cargar datos semilla, usuarios demo y proyecto simulado
+python manage.py seed_mita
+
+# Verificar configuración
+python manage.py check</pre>
+
+<h3>12.2 Arrancar el servidor de desarrollo</h3>
+<pre># Puerto por defecto (8000)
+python manage.py runserver
+
+# Puerto alternativo (si 8000 está ocupado)
+python manage.py runserver 127.0.0.1:8888</pre>
+
+<p>URLs de acceso:</p>
+<ul>
+  <li>Plataforma: <a href="http://127.0.0.1:8000/">http://127.0.0.1:8000/</a></li>
+  <li>Login: <a href="http://127.0.0.1:8000/login/">http://127.0.0.1:8000/login/</a></li>
+  <li>Admin Django: <a href="http://127.0.0.1:8000/admin/">http://127.0.0.1:8000/admin/</a></li>
+  <li>API health: <a href="http://127.0.0.1:8000/api/health/">http://127.0.0.1:8000/api/health/</a></li>
+</ul>
+
+<div class="note">
+  Si usa el puerto <strong>8888</strong>, sustituya <code>8000</code> por <code>8888</code> en las URLs anteriores.
+</div>
+
+<h3>12.3 Comandos de mantenimiento</h3>
+<pre># Recargar datos demo (usuarios + expedientes simulados)
+python manage.py seed_mita
+
+# Crear superusuario adicional
+python manage.py createsuperuser
+
+# Ejecutar pruebas
+python manage.py test
+
+# Recolectar archivos estáticos (producción)
+python manage.py collectstatic --noinput
+
+# Regenerar manual de usuario con pantallas
+python scripts/capturar_pantallas_manual.py
+python scripts/generar_manual_docx.py</pre>
+
+<h3>12.4 Despliegue en producción</h3>
+<pre># Windows (cmd)
+set DJANGO_DEBUG=False
+set DJANGO_SECRET_KEY=clave-segura-generada
+set DATABASE_URL=postgres://usuario:clave@host:5432/mita
+set DJANGO_ALLOWED_HOSTS=midominio.gob.mx
+
+python manage.py migrate
+python manage.py collectstatic --noinput
+python manage.py seed_mita
+
+gunicorn mita_platform.wsgi:application --bind 0.0.0.0:8000</pre>
+
+<div class="warning">
+  En producción use una clave secreta segura, <code>DEBUG=False</code>, PostgreSQL y un servidor WSGI
+  (Gunicorn, uWSGI) detrás de un proxy inverso (Nginx/Apache) con HTTPS.
+</div>
+
+<h3>12.5 Instalación en Linux / macOS</h3>
+<pre>cd MI
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py seed_mita
+python manage.py runserver 0.0.0.0:8000</pre>
+
+<h2>13. Datos demo precargados</h2>
+<table>
+  <thead><tr><th>Elemento</th><th>Identificador</th><th>Descripción</th></tr></thead>
+  <tbody>
+    <tr><td>Expediente activo</td><td><code>MITA-DEMO-2026-ACTIVO</code></td><td>Paso 6 — evaluación SNI pendiente</td></tr>
+    <tr><td>Expediente dictaminado</td><td><code>MITA-DEMO-2026-DICTAMINADO</code></td><td>Dictamen emitido — modo auditoría</td></tr>
+    <tr><td>Proyecto referencia</td><td>EDOMEX DIABETES 2026–2032</td><td>Objetivo, metas y ejes de acción</td></tr>
+    <tr><td>Disciplinas</td><td>12+ áreas</td><td>SEDESA, CECyTEM, INEGI, SNI, etc.</td></tr>
+    <tr><td>Zonas geográficas</td><td>Corredor Oriente</td><td>Ecatepec, Nezahualcóyotl, Chalco, etc.</td></tr>
+  </tbody>
+</table>
+
+<h2>14. Estructura de directorios</h2>
+<pre>MI/
+├── manage.py
+├── requirements.txt
+├── db.sqlite3                 # Base de datos (desarrollo)
+├── mita_platform/             # Configuración Django (settings, urls, wsgi)
+├── core/                      # Auth, permisos, vistas web, seed, demo
+├── mita_engine/               # Motor MITA, workflow, PDF, expedientes
+├── conocimiento/              # Disciplinas y fuentes
+├── geoespacial/               # Zonas y capas SIG
+├── interculturalidad/         # Saberes tradicionales
+├── sni/                       # Perfiles investigadores
+├── legislacion/               # Análisis normativo
+├── proyectos/                 # Proyecto referencia
+├── reportes/                  # Indicadores de impacto
+├── api/                       # REST API
+├── templates/                 # Plantillas HTML
+├── static/                    # CSS y recursos estáticos
+├── media/                     # PDF de dictámenes generados
+├── docs/                      # Manual de usuario y ficha técnica
+└── scripts/                   # Utilidades (capturas, generación de docs)
+</pre>
+
+<h2>15. Documentación relacionada</h2>
+<ul>
+  <li>Manual de usuario: <code>docs/manual-usuario/MANUAL_USUARIO_MITA.html</code></li>
+  <li>Manual Word: <code>docs/manual-usuario/MANUAL_USUARIO_MITA.docx</code></li>
+  <li>README del proyecto: <code>README.md</code></li>
+</ul>
+
+<hr style="margin-top:2.5rem;border:none;border-top:1px solid var(--border);">
+<p style="font-size:0.85rem;color:var(--muted);text-align:center;">
+  Plataforma MITA — Gobierno del Estado de México · Ficha técnica v1.0 · Mayo 2026
+</p>
+
+</body>
+</html>

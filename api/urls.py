@@ -1,0 +1,38 @@
+from django.urls import path
+
+from . import views
+
+urlpatterns = [
+    path('health/', views.health, name='api-health'),
+    path('dashboard/', views.dashboard, name='api-dashboard'),
+    path('disciplinas/', views.disciplinas_list, name='api-disciplinas'),
+    path('disciplinas/<str:disciplina_id>/', views.disciplina_detail, name='api-disciplina-detail'),
+    path('fuentes/', views.fuentes_list, name='api-fuentes'),
+    path('geoespacial/zonas/', views.zonas_list, name='api-zonas'),
+    path('geoespacial/capas/', views.capas_geo, name='api-capas'),
+    path('geoespacial/resumen/', views.resumen_geoespacial, name='api-resumen-geo'),
+    path('mita/ejes/', views.ejes_mita, name='api-ejes'),
+    path('mita/proceso/', views.proceso_mita, name='api-proceso'),
+    path('mita/cruces/', views.cruces_list, name='api-cruces'),
+    path('mita/cruce/', views.cruce_create, name='api-cruce'),
+    path('mita/analogia/', views.analogia_evaluar, name='api-analogia'),
+    path('mita/dictamen/', views.dictamen_generar, name='api-dictamen'),
+    path('mita/dictamenes/', views.dictamenes_list, name='api-dictamenes'),
+    path('mita/dictamen/<int:dictamen_id>/pdf/', views.dictamen_pdf, name='api-dictamen-pdf'),
+    path('proyecto/', views.proyecto_detail, name='api-proyecto'),
+    path('proyecto/ejes/', views.ejes_accion, name='api-ejes-accion'),
+    path('proyecto/perfiles/', views.perfiles_sni, name='api-perfiles'),
+    path('proyecto/sintesis/', views.sintesis, name='api-sintesis'),
+    path('sni/investigadores/', views.investigadores_sni, name='api-investigadores'),
+    path('interculturalidad/saberes/', views.saberes_tradicionales, name='api-saberes'),
+    path('interculturalidad/comparar/', views.comparador_cultural, name='api-comparar'),
+    path('legislacion/analisis/', views.analisis_legislativo, name='api-legislacion'),
+    path('reportes/indicadores/', views.indicadores_impacto, name='api-indicadores'),
+    path('reportes/lecciones/', views.lecciones_aprendidas, name='api-lecciones'),
+    path('buscar/', views.buscar_semantica, name='api-buscar'),
+    path('expedientes/', views.expedientes_list_create, name='api-expedientes'),
+    path('expedientes/<int:pk>/', views.expediente_detail_api, name='api-expediente-detail'),
+    path('expedientes/<int:pk>/avanzar/', views.expediente_avanzar, name='api-expediente-avanzar'),
+    path('expedientes/<int:pk>/paso/', views.expediente_guardar_paso, name='api-expediente-paso'),
+    path('bandeja/', views.bandeja_api, name='api-bandeja'),
+]

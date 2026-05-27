@@ -1,0 +1,326 @@
+{% extends 'base.html' %}
+{% block title %}Registrar problemática — MITA{% endblock %}
+{% block page_title %}Registrar mi problemática{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+.ciudadania-layout { display:grid; grid-template-columns:1fr 360px; gap:1.25rem; align-items:start; }
+@media(max-width:960px){ .ciudadania-layout { grid-template-columns:1fr; } }
+.mapa-ciudadania { height:320px; border-radius:8px; border:1px solid var(--mita-border); }
+.lista-ubicaciones { list-style:none; padding:0; max-height:180px; overflow-y:auto; }
+.lista-ubicaciones li { font-size:0.8rem; padding:0.45rem 0; border-bottom:1px solid var(--mita-border); }
+</style>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="alert alert-info">
+  Ventanilla exclusiva del <strong>Estado de México</strong>. Ubicaciones y dependencias corresponden solo a esta entidad.
+</div>
+{% if error %}
+<div class="alert alert-warning">{{ error }}</div>
+{% endif %}
+
+<div class="ciudadania-layout">
+  <div>
+    <div class="card" style="margin-bottom:1rem;">
+      <h3>Paso 1 — Seleccione el eje de su problemática</h3>
+      <div class="ejes-grid">
+        {% for eje in ejes %}
+        <a href="?eje={{ eje.slug }}" class="eje-card-item {% if eje_slug == eje.slug %}eje-selected{% endif %}" style="border-left-color:{{ eje.color }};">
+          <span class="eje-icon">{{ eje.icono }}</span>
+          <strong>{{ eje.nombre }}</strong>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% if eje_cfg %}
+    <form method="post" class="card" id="form-reporte">
+      {% csrf_token %}
+      <input type="hidden" name="eje" value="{{ eje_slug }}">
+      <input type="hidden" name="accion" value="registrar">
+      <h3>Paso 2 — Datos del eje {{ eje_cfg.nombre }}</h3>
+      <p style="font-size:0.85rem;color:var(--mita-muted);margin-bottom:1rem;">{{ eje_cfg.descripcion }}</p>
+
+      <div class="alert alert-info" style="font-size:0.85rem;">
+        <strong>Dependencias que intervendrán:</strong>
+        {% for d in eje_cfg.dependencias %}
+        <span class="badge badge-info" style="margin:0.15rem;">{{ d.nombre }}</span>
+        {% endfor %}
+      </div>
+
+      {% for campo in eje_cfg.campos %}
+      <div class="form-group{% if campo.condicion_edad_min %} campo-edad-condicional{% endif %}"
+           {% if campo.condicion_edad_min %}data-edad-min="{{ campo.condicion_edad_min }}" style="display:none;"{% endif %}>
+        <label>{{ campo.label }}{% if campo.required %} *{% endif %}</label>
+        {% if campo.condicion_edad_min %}
+        <p style="font-size:0.75rem;color:var(--mita-muted);margin-bottom:0.35rem;">Visible si tiene más de {{ campo.condicion_edad_min }} años</p>
+        {% endif %}
+        {% if campo.type == 'textarea' %}
+        <textarea name="{{ campo.name }}" rows="3" {% if campo.required %}required{% endif %}>{% for k,v in datos.items %}{% if k == campo.name %}{{ v }}{% endif %}{% endfor %}</textarea>
+        {% elif campo.type == 'select' %}
+        <select name="{{ campo.name }}" class="{% if campo.filtra_ubicaciones %}filtro-municipio-edomex{% endif %}" {% if campo.required %}required{% endif %}>
+          <option value="">{% if campo.filtra_ubicaciones %}— Seleccione municipio —{% else %}— Seleccione —{% endif %}</option>
+          {% for opt in campo.options %}
+          <option value="{{ opt }}" {% for k,v in datos.items %}{% if k == campo.name and v == opt %}selected{% endif %}{% endfor %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+        {% elif campo.type == 'centro_salud' %}
+        <select name="{{ campo.name }}" id="select-centro-salud" class="select-centro-salud" disabled {% if campo.required %}required{% endif %}>
+          <option value="">— Seleccione municipio primero —</option>
+        </select>
+        <p style="font-size:0.75rem;color:var(--mita-muted);margin-top:0.35rem;">Catálogo de centros ISSEM/SEDESA en el Estado de México</p>
+        {% elif campo.type == 'checkbox_list' %}
+        <div class="checkbox-grid">
+          {% for opt in campo.options %}
+          <label><input type="checkbox" name="{{ campo.name }}" value="{{ opt }}"
+            {% for k,v in datos.items %}{% if k == campo.name %}{% if v == opt %}checked{% elif v %}{% for item in v %}{% if item == opt %}checked{% endif %}{% endfor %}{% endif %}{% endif %}{% endfor %}>
+            {{ opt }}</label>
+          {% endfor %}
+        </div>
+        {% elif campo.type == 'number' %}
+        <input type="number" name="{{ campo.name }}" class="{% if campo.name == 'edad' or campo.name == 'experiencia' %}campo-perfil-empleo{% endif %}"
+               value="{% for k,v in datos.items %}{% if k == campo.name %}{{ v }}{% endif %}{% endfor %}"
+               {% if campo.min %}min="{{ campo.min }}"{% endif %}
+               {% if campo.max %}max="{{ campo.max }}"{% endif %}
+               {% if campo.required %}required{% endif %}>
+        {% elif campo.type == 'email' %}
+        <input type="email" name="{{ campo.name }}" value="{% for k,v in datos.items %}{% if k == campo.name %}{{ v }}{% endif %}{% endfor %}" {% if campo.required %}required{% endif %}>
+        {% elif campo.type == 'tel' %}
+        <input type="tel" name="{{ campo.name }}" value="{% for k,v in datos.items %}{% if k == campo.name %}{{ v }}{% endif %}{% endfor %}" placeholder="10 dígitos" {% if campo.required %}required{% endif %}>
+        {% else %}
+        <input type="text" name="{{ campo.name }}" value="{% for k,v in datos.items %}{% if k == campo.name %}{{ v }}{% endif %}{% endfor %}" {% if campo.required %}required{% endif %}>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      <button type="submit" class="btn btn-success" style="width:100%;margin-top:0.5rem;">
+        Registrar mi problemática y obtener número de control
+      </button>
+    </form>
+
+    {% include 'ciudadania/_mapa_ubicaciones.html' with mapa_filtrar_municipio=True %}
+    {% else %}
+    <div class="card">
+      <p style="color:var(--mita-muted);">Seleccione un eje arriba para ver el formulario de captura.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card chat-panel">
+    <div class="chat-header">
+      <span class="chat-ia-badge">IA</span>
+      <div>
+        <strong>Asistente IA MITA</strong>
+        <p style="font-size:0.75rem;color:var(--mita-muted);margin:0;">Le ayuda a registrar su caso</p>
+      </div>
+    </div>
+    <div class="chat-messages" id="chat-ia-messages">
+      <div class="chat-msg chat-msg-ia">
+        <span class="chat-author">Asistente IA MITA</span>
+        <p>¡Hola! Seleccione un eje y le indicaré qué datos capturar y qué dependencias atenderán su caso.</p>
+      </div>
+      {% for m in mensajes_ia %}
+      <div class="chat-msg chat-msg-{{ m.tipo_autor }}">
+        <span class="chat-author">{{ m.autor_nombre }}</span>
+        <p>{{ m.contenido|linebreaksbr }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="chat-ia-input" placeholder="Pregunte al asistente..." autocomplete="off">
+      <button type="button" class="btn btn-primary btn-sm" id="chat-ia-send">Enviar</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+  const ejeSlug = '{{ eje_slug|default:"" }}';
+  const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}';
+  const messagesEl = document.getElementById('chat-ia-messages');
+  const inputEl = document.getElementById('chat-ia-input');
+  const sendBtn = document.getElementById('chat-ia-send');
+  let mapaCiudadania = null;
+  let capaMarcadores = null;
+  let ubicacionesActuales = {{ ubicaciones_json|default:"[]"|safe }};
+
+  const iconosEje = {
+    salud: '#3182ce', educacion: '#805ad5', empleo: '#d69e2e',
+    seguridad: '#2c5282', economia: '#276749', corrupcion: '#c53030',
+  };
+
+  function initMapa() {
+    const el = document.getElementById('mapa-ciudadania');
+    if (!el || mapaCiudadania) return;
+    mapaCiudadania = L.map('mapa-ciudadania').setView([19.35, -99.5], 9);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap — Estado de México'
+    }).addTo(mapaCiudadania);
+    capaMarcadores = L.layerGroup().addTo(mapaCiudadania);
+    pintarUbicaciones(ubicacionesActuales);
+  }
+
+  function pintarUbicaciones(lista) {
+    if (!capaMarcadores) return;
+    capaMarcadores.clearLayers();
+    const ul = document.getElementById('lista-ubicaciones');
+    if (ul) ul.innerHTML = '';
+    const color = iconosEje[ejeSlug] || '#3182ce';
+    lista.forEach(u => {
+      L.circleMarker([u.lat, u.lng], {
+        radius: 9, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.85
+      }).addTo(capaMarcadores).bindPopup(
+        `<strong>${u.nombre}</strong><br><em>${u.tipo}</em><br>${u.direccion}<br>${u.telefono || ''}<br>${u.horario || ''}`
+      );
+      if (ul) {
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${u.nombre}</strong> — ${u.municipio}<br><span style="color:var(--mita-muted)">${u.tipo} · ${u.direccion}</span>`;
+        ul.appendChild(li);
+      }
+    });
+    if (lista.length && mapaCiudadania) {
+      const bounds = L.latLngBounds(lista.map(u => [u.lat, u.lng]));
+      mapaCiudadania.fitBounds(bounds.pad(0.15));
+    }
+  }
+
+  async function filtrarUbicaciones(municipio) {
+    if (!ejeSlug) return;
+    const q = municipio ? `?municipio=${encodeURIComponent(municipio)}` : '';
+    const res = await fetch(`/ciudadania/api/eje/${ejeSlug}/ubicaciones/${q}`);
+    const data = await res.json();
+    ubicacionesActuales = data.ubicaciones || [];
+    pintarUbicaciones(ubicacionesActuales);
+  }
+
+  async function cargarCentrosSalud(municipio) {
+    const sel = document.getElementById('select-centro-salud');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">— Cargando centros… —</option>';
+    sel.disabled = true;
+    if (!municipio) {
+      sel.innerHTML = '<option value="">— Seleccione municipio primero —</option>';
+      return;
+    }
+    const res = await fetch(`/ciudadania/api/centros-salud/?municipio=${encodeURIComponent(municipio)}`);
+    const data = await res.json();
+    const centros = data.centros || [];
+    sel.innerHTML = centros.length
+      ? '<option value="">— Seleccione centro de salud —</option>'
+      : '<option value="">— Sin centros en este municipio —</option>';
+    centros.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.slug;
+      opt.textContent = c.nombre + ' (' + c.tipo + ')';
+      sel.appendChild(opt);
+    });
+    sel.disabled = !centros.length;
+    ubicacionesActuales = centros;
+    pintarUbicaciones(centros);
+  }
+
+  async function onMunicipioChange(municipio) {
+    if (ejeSlug === 'salud') {
+      await cargarCentrosSalud(municipio);
+    } else {
+      await filtrarUbicaciones(municipio);
+    }
+  }
+
+  document.querySelector('.filtro-municipio-edomex')?.addEventListener('change', e => {
+    onMunicipioChange(e.target.value);
+  });
+
+  if (ejeSlug && document.getElementById('mapa-ciudadania')) {
+    setTimeout(initMapa, 100);
+    const mun = document.querySelector('.filtro-municipio-edomex')?.value;
+    if (mun) onMunicipioChange(mun);
+  }
+
+  function appendMsg(tipo, autor, texto) {
+    const div = document.createElement('div');
+    div.className = 'chat-msg chat-msg-' + tipo;
+    div.innerHTML = '<span class="chat-author">' + autor + '</span><p>' + texto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>') + '</p>';
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function getDatosParciales() {
+    const form = document.getElementById('form-reporte');
+    if (!form) return {};
+    const fd = new FormData(form);
+    const d = {};
+    for (const [k, v] of fd.entries()) {
+      if (k === 'csrfmiddlewaretoken' || k === 'accion') continue;
+      if (d[k] !== undefined) {
+        if (!Array.isArray(d[k])) d[k] = [d[k]];
+        d[k].push(v);
+      } else {
+        d[k] = v;
+      }
+    }
+    return d;
+  }
+
+  async function enviarIA(mensaje, fase) {
+    const res = await fetch('{% url "ciudadania-asistente" %}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+      body: JSON.stringify({ mensaje, eje: ejeSlug || null, fase: fase || 'exploracion', datos: getDatosParciales() })
+    });
+    const data = await res.json();
+    if (data.respuesta) appendMsg('ia', 'Asistente IA MITA', data.respuesta);
+  }
+
+  function actualizarCamposEdad() {
+    const edadInput = document.querySelector('input[name="edad"]');
+    if (!edadInput) return;
+    const edad = parseInt(edadInput.value, 10) || 0;
+    document.querySelectorAll('.campo-edad-condicional').forEach(el => {
+      const min = parseInt(el.dataset.edadMin, 10) || 50;
+      el.style.display = edad > min ? 'block' : 'none';
+    });
+  }
+
+  let analisisTimeout = null;
+  function programarAnalisisEmpleo() {
+    if (ejeSlug !== 'empleo') return;
+    clearTimeout(analisisTimeout);
+    analisisTimeout = setTimeout(() => {
+      const datos = getDatosParciales();
+      const edad = parseInt(datos.edad, 10) || 0;
+      if (edad > 0) enviarIA('', 'analisis_empleo');
+    }, 600);
+  }
+
+  document.querySelector('input[name="edad"]')?.addEventListener('input', () => {
+    actualizarCamposEdad();
+    programarAnalisisEmpleo();
+  });
+  document.querySelector('input[name="experiencia"]')?.addEventListener('input', programarAnalisisEmpleo);
+  document.querySelector('select[name="tipo_trabajo_buscado"]')?.addEventListener('change', programarAnalisisEmpleo);
+
+  actualizarCamposEdad();
+
+  sendBtn?.addEventListener('click', () => {
+    const msg = inputEl.value.trim();
+    if (!msg) return;
+    appendMsg('ciudadano', '{{ user.get_full_name|default:user.username }}', msg);
+    inputEl.value = '';
+    enviarIA(msg);
+  });
+
+  inputEl?.addEventListener('keydown', e => { if (e.key === 'Enter') sendBtn.click(); });
+
+  if (ejeSlug) {
+    enviarIA('', 'bienvenida_eje');
+  }
+})();
+</script>
+{% endblock %}

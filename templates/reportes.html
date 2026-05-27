@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Reportes — MITA{% endblock %}
+{% block page_title %}Reportes e Indicadores de Impacto (RF-11){% endblock %}
+
+{% block content %}
+<div class="grid grid-2">
+  {% for ind in indicadores %}
+  <div class="card">
+    <h3>{{ ind.nombre }}</h3>
+    <p><span class="badge badge-info">{{ ind.get_sector_display }}</span></p>
+    <p style="margin-top:0.5rem;">Actual: <strong>{{ ind.valor_actual }} {{ ind.unidad }}</strong></p>
+    <p>Meta: {{ ind.meta }} {{ ind.unidad }}</p>
+    <div class="progress-bar" style="margin-top:0.5rem;">
+      <div class="fill" style="width:{% widthratio ind.valor_actual ind.meta 100 %}%"></div>
+    </div>
+    <p style="font-size:0.8rem;color:var(--mita-muted);margin-top:0.25rem;">Tendencia: {{ ind.tendencia }}</p>
+  </div>
+  {% empty %}
+  <p>Ejecute seed_mita para cargar indicadores.</p>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% if eje_cfg %}
+<div class="card" style="margin-top:1rem;">
+  <h3>{{ eje_cfg.ubicaciones_titulo|default:"Puntos de atención en el Estado de México" }}</h3>
+  <p style="font-size:0.8rem;color:var(--mita-muted);margin-bottom:0.75rem;">
+    Cobertura exclusiva del <strong>Estado de México</strong>.
+    {% if mapa_filtrar_municipio %}Seleccione municipio en el formulario para filtrar.{% endif %}
+  </p>
+  <div id="mapa-ciudadania" class="mapa-ciudadania"></div>
+  <ul id="lista-ubicaciones" class="lista-ubicaciones" style="margin-top:0.75rem;"></ul>
+</div>
+{% endif %}

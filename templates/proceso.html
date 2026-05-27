@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Proceso Operativo — MITA{% endblock %}
+{% block page_title %}Proceso Operativo Integrado (RF-08){% endblock %}
+
+{% block content %}
+<div class="grid grid-3" style="margin-bottom:1.5rem;">
+  <div class="card stat-card">
+    <div class="value">{{ metricas.total_activos }}</div>
+    <div class="label">Expedientes activos</div>
+  </div>
+  <div class="card stat-card">
+    <div class="value">{{ metricas.total_dictaminados }}</div>
+    <div class="label">Dictaminados / en seguimiento</div>
+  </div>
+  <div class="card stat-card">
+    <a href="{% url 'expediente-nuevo' %}" class="btn btn-primary">Iniciar proceso</a>
+  </div>
+</div>
+
+<p style="margin-bottom:1.5rem;color:var(--mita-muted);">
+  Cada paso del proceso operativo MITA está vinculado a un módulo funcional de la plataforma.
+  Los expedientes avanzan secuencialmente con trazabilidad completa.
+</p>
+
+<div class="proceso-kanban">
+  {% for paso in pasos %}
+  <div class="proceso-column card" id="paso-{{ paso.paso }}">
+    <div class="proceso-column-header">
+      <span class="step-circle" style="width:1.8rem;height:1.8rem;font-size:0.8rem;">{{ paso.paso }}</span>
+      <div>
+        <strong style="font-size:0.9rem;">{{ paso.nombre }}</strong>
+        <p style="font-size:0.75rem;color:var(--mita-muted);">{{ paso.modulo }} · {{ paso.rf }}</p>
+      </div>
+      <span class="badge badge-info">{{ paso.expedientes_count }}</span>
+    </div>
+    <p style="font-size:0.8rem;margin:0.75rem 0;">{{ paso.descripcion|truncatechars:100 }}</p>
+    <ul class="proceso-acciones" style="font-size:0.75rem;">
+      {% for accion in paso.acciones|slice:":2" %}
+      <li>{{ accion|truncatechars:60 }}</li>
+      {% endfor %}
+    </ul>
+    {% for exp in paso.expedientes %}
+    <a href="{% url 'expediente-detalle' exp.pk %}" class="proceso-exp-card">
+      <strong>{{ exp.folio }}</strong>
+      <span>{{ exp.titulo|truncatechars:35 }}</span>
+    </a>
+    {% empty %}
+    <p style="font-size:0.8rem;color:var(--mita-muted);">Sin expedientes en este paso.</p>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card" style="margin-top:1.5rem;">
+  <h3>Cruces interdisciplinarios de referencia (Paso 3)</h3>
+  <div class="grid grid-2" style="margin-top:0.75rem;">
+    {% for cruce in cruces %}
+    <div style="font-size:0.85rem;padding:0.5rem 0;border-bottom:1px solid var(--mita-border);">
+      <strong>{{ cruce.concepto }}</strong>
+      <p style="color:var(--mita-muted);">{{ cruce.resultado|truncatechars:120 }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

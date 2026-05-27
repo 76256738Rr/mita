@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Nuevo expediente — MITA{% endblock %}
+{% block page_title %}Registrar nuevo expediente{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:640px;">
+  <p style="margin-bottom:1rem;color:var(--mita-muted);">
+    Paso 1 del proceso MITA: defina el asunto que será sometido a validación.
+  </p>
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="form-group">
+      <label>{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}<span style="color:var(--mita-danger);font-size:0.85rem;">{{ field.errors.0 }}</span>{% endif %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Crear expediente</button>
+    <a href="{% url 'expedientes' %}" class="btn" style="margin-left:0.5rem;">Cancelar</a>
+  </form>
+</div>
+{% endblock %}

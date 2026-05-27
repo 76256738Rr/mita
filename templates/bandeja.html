@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Bandeja de trabajo — MITA{% endblock %}
+{% block page_title %}Bandeja de Trabajo{% endblock %}
+
+{% block content %}
+<div class="grid grid-3" style="margin-bottom:1.5rem;">
+  <div class="card stat-card">
+    <div class="value">{{ total_tareas }}</div>
+    <div class="label">Tareas pendientes</div>
+  </div>
+  <div class="card stat-card">
+    <div class="value">{{ expedientes.count }}</div>
+    <div class="label">Expedientes activos</div>
+  </div>
+  <div class="card stat-card">
+    <a href="{% url 'expediente-nuevo' %}" class="btn btn-primary">Nuevo expediente</a>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h3>Mis tareas</h3>
+    {% for t in tareas %}
+    <div class="task-item {% if t.urgente %}task-urgente{% endif %}">
+      <div>
+        <strong>{{ t.titulo }}</strong>
+        <p style="font-size:0.85rem;color:var(--mita-muted);">{{ t.expediente.folio }} — Paso {{ t.paso }}</p>
+      </div>
+      <a href="{% url 'expediente-detalle' t.expediente.pk %}" class="btn btn-primary btn-sm">Abrir</a>
+    </div>
+    {% empty %}
+    <p style="color:var(--mita-muted);">No hay tareas pendientes.</p>
+    {% endfor %}
+  </div>
+
+  <div class="card">
+    <h3>Expedientes recientes</h3>
+    <table>
+      <thead><tr><th>Folio</th><th>Título</th><th>Paso</th><th>Estado</th></tr></thead>
+      <tbody>
+        {% for e in expedientes %}
+        <tr>
+          <td><a href="{% url 'expediente-detalle' e.pk %}">{{ e.folio }}</a></td>
+          <td>{{ e.titulo|truncatechars:40 }}</td>
+          <td>{{ e.paso_actual }}/7</td>
+          <td><span class="badge badge-info">{{ e.get_estado_display }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

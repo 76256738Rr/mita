@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Expedientes — MITA{% endblock %}
+{% block page_title %}Expedientes MITA{% endblock %}
+
+{% block content %}
+<div style="display:flex;justify-content:space-between;margin-bottom:1rem;">
+  <div>
+    {% for val, label in estados %}
+    <a href="?estado={{ val }}" class="badge {% if estado_filtro == val %}badge-success{% else %}badge-info{% endif %}" style="margin-right:0.5rem;">{{ label }}</a>
+    {% endfor %}
+    <a href="{% url 'expedientes' %}" class="badge badge-info">Todos</a>
+  </div>
+  <a href="{% url 'expediente-nuevo' %}" class="btn btn-primary">+ Nuevo expediente</a>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Folio</th>
+        <th>Título</th>
+        <th>Paso</th>
+        <th>Progreso</th>
+        <th>Estado</th>
+        <th>Plazo</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in expedientes %}
+      <tr>
+        <td><strong>{{ e.folio }}</strong></td>
+        <td>{{ e.titulo|truncatechars:50 }}</td>
+        <td>{{ e.paso_actual }}/7 — {{ e.paso_nombre }}</td>
+        <td>
+          <div class="progress-bar"><div class="fill" style="width:{{ e.progreso_pct }}%"></div></div>
+        </td>
+        <td>
+          <span class="badge {% if e.vencido %}badge-danger{% else %}badge-info{% endif %}">
+            {{ e.get_estado_display }}
+          </span>
+        </td>
+        <td style="font-size:0.85rem;">{% if e.plazo_limite %}{{ e.plazo_limite|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+        <td><a href="{% url 'expediente-detalle' e.pk %}">Gestionar →</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7">No hay expedientes. <a href="{% url 'expediente-nuevo' %}">Crear uno</a></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

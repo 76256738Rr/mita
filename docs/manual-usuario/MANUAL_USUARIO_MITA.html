@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manual de Usuario — Plataforma MITA</title>
+  <style>
+    :root {
+      --primary: #1a365d;
+      --secondary: #2c5282;
+      --accent: #3182ce;
+      --muted: #718096;
+      --border: #e2e8f0;
+      --bg: #f7fafc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #2d3748;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 2rem 2.5rem 4rem;
+      background: #fff;
+    }
+    .cover {
+      text-align: center;
+      padding: 4rem 1rem 3rem;
+      border-bottom: 3px solid var(--primary);
+      margin-bottom: 3rem;
+      page-break-after: always;
+    }
+    .cover h1 { font-size: 2rem; color: var(--primary); margin-bottom: 0.5rem; }
+    .cover .subtitle { font-size: 1.1rem; color: var(--secondary); margin-bottom: 2rem; }
+    .cover .meta { font-size: 0.9rem; color: var(--muted); }
+    h2 {
+      color: var(--primary);
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0.4rem;
+      margin-top: 2.5rem;
+      page-break-after: avoid;
+    }
+    h3 { color: var(--secondary); margin-top: 1.5rem; page-break-after: avoid; }
+    h4 { color: #4a5568; margin-top: 1rem; }
+    p, li { font-size: 0.95rem; }
+    ul, ol { padding-left: 1.4rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0 1.5rem;
+      font-size: 0.9rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.55rem 0.75rem;
+      text-align: left;
+    }
+    th { background: var(--bg); color: var(--primary); }
+    .screenshot {
+      margin: 1.25rem 0 1.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      page-break-inside: avoid;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .screenshot img {
+      width: 100%;
+      display: block;
+    }
+    .screenshot figcaption {
+      padding: 0.65rem 1rem;
+      background: var(--bg);
+      font-size: 0.85rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+    .note {
+      background: #ebf8ff;
+      border-left: 4px solid var(--accent);
+      padding: 0.85rem 1rem;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    .warning {
+      background: #fffaf0;
+      border-left: 4px solid #dd6b20;
+      padding: 0.85rem 1rem;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    .toc { background: var(--bg); padding: 1.25rem 1.5rem; border-radius: 6px; margin: 2rem 0; }
+    .toc ol { margin: 0; }
+    .toc a { color: var(--secondary); text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    .step-list { counter-reset: step; list-style: none; padding: 0; }
+    .step-list li {
+      counter-increment: step;
+      margin-bottom: 0.75rem;
+      padding-left: 2.5rem;
+      position: relative;
+    }
+    .step-list li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0;
+      background: var(--primary);
+      color: #fff;
+      width: 1.6rem;
+      height: 1.6rem;
+      border-radius: 50%;
+      text-align: center;
+      font-size: 0.8rem;
+      line-height: 1.6rem;
+      font-weight: bold;
+    }
+    @media print {
+      body { padding: 1rem; max-width: none; }
+      .screenshot { box-shadow: none; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>Manual de Usuario</h1>
+  <p class="subtitle">Plataforma MITA<br>Multi-Intercultural-Transdisciplina Analógica</p>
+  <p class="meta">
+    Gobierno del Estado de México — Secretaría de Salud (SEDESA)<br>
+    Versión 1.0 · Mayo 2026<br>
+    Proyecto de referencia: EDOMEX DIABETES 2026–2032
+  </p>
+</div>
+
+<div class="toc">
+  <strong>Contenido</strong>
+  <ol>
+    <li><a href="#intro">Introducción</a></li>
+    <li><a href="#acceso">Acceso al sistema</a></li>
+    <li><a href="#roles">Roles y permisos</a></li>
+    <li><a href="#navegacion">Navegación general</a></li>
+    <li><a href="#proceso">Proceso operativo de 7 pasos</a></li>
+    <li><a href="#expedientes">Gestión de expedientes</a></li>
+    <li><a href="#modulos">Módulos de la plataforma</a></li>
+    <li><a href="#demo">Recorrido del proyecto demo</a></li>
+    <li><a href="#dictamen">Dictámenes y reportes</a></li>
+    <li><a href="#faq">Preguntas frecuentes</a></li>
+  </ol>
+</div>
+
+<h2 id="intro">1. Introducción</h2>
+
+<p>
+  La <strong>Plataforma MITA</strong> es la herramienta oficial de gestión del conocimiento y buen gobierno
+  del Estado de México. Integra bases de datos interdisciplinarias, análisis geoespacial, evaluación analógica,
+  perfiles del Sistema Nacional de Investigadores (SNI) y emisión de dictámenes de validación en un flujo
+  único de trabajo orientado a procesos.
+</p>
+
+<p>La plataforma cumple los requisitos funcionales RF-01 a RF-11 y organiza la atención de iniciativas públicas en siete pasos secuenciales:</p>
+
+<ol>
+  <li>Definición del asunto</li>
+  <li>Recopilación de conocimiento</li>
+  <li>Organización y relación interdisciplinaria</li>
+  <li>Análisis y analogía</li>
+  <li>Generación de opciones de solución</li>
+  <li>Evaluación y selección (SNI)</li>
+  <li>Dictamen de validación MITA</li>
+</ol>
+
+<div class="note">
+  <strong>Entorno de demostración:</strong> el sistema incluye el proyecto simulado
+  <em>EDOMEX DIABETES 2026–2032</em> con dos expedientes precargados para practicar el flujo completo
+  sin registrar datos reales.
+</div>
+
+<h2 id="acceso">2. Acceso al sistema</h2>
+
+<h3>2.1 Requisitos</h3>
+<ul>
+  <li>Navegador web actualizado (Chrome, Edge o Firefox recomendados).</li>
+  <li>Conexión a la red donde esté desplegada la plataforma.</li>
+  <li>Usuario y contraseña asignados por el administrador MITA.</li>
+</ul>
+
+<h3>2.2 Pantalla de inicio de sesión</h3>
+<p>
+  Al abrir la URL de la plataforma sin sesión activa, el sistema redirige a la pantalla de login.
+  En el entorno demo, cada tarjeta representa un rol del sistema; al pulsar <strong>Entrar como …</strong>
+  se inicia sesión automáticamente con las credenciales de demostración.
+</p>
+
+<figure class="screenshot">
+  <img src="pantallas/01-login.png" alt="Pantalla de inicio de sesión con roles">
+  <figcaption>Figura 1 — Inicio de sesión por rol. Contraseña demo: <strong>mita2026</strong></figcaption>
+</figure>
+
+<h3>2.3 Acceso manual</h3>
+<p>
+  Si prefiere escribir las credenciales, despliegue la sección <strong>Acceso manual</strong> en la parte
+  inferior de la pantalla de login, ingrese usuario y contraseña, y pulse <strong>Iniciar sesión</strong>.
+</p>
+
+<h2 id="roles">3. Roles y permisos</h2>
+
+<p>Cada usuario opera según su perfil. La tabla siguiente resume los cinco roles demo disponibles:</p>
+
+<table>
+  <thead>
+    <tr><th>Usuario</th><th>Rol</th><th>Responsabilidad principal</th><th>Pantalla inicial</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>dependencia</code></td>
+      <td>Dependencia Gubernamental</td>
+      <td>Registra iniciativas y completa el Paso 1</td>
+      <td>Nuevo expediente</td>
+    </tr>
+    <tr>
+      <td><code>analista</code></td>
+      <td>Analista MITA</td>
+      <td>Recopila conocimiento, cruces y evaluación (Pasos 2–5)</td>
+      <td>Expediente demo activo</td>
+    </tr>
+    <tr>
+      <td><code>investigador</code></td>
+      <td>Investigador SNI</td>
+      <td>Selecciona la opción de solución más viable (Paso 6)</td>
+      <td>Expediente demo activo</td>
+    </tr>
+    <tr>
+      <td><code>admin</code></td>
+      <td>Administrador</td>
+      <td>Emite el Dictamen de Validación MITA (Paso 7)</td>
+      <td>Expediente demo activo</td>
+    </tr>
+    <tr>
+      <td><code>auditor</code></td>
+      <td>Auditor</td>
+      <td>Consulta trazabilidad e indicadores (solo lectura)</td>
+      <td>Expediente dictaminado</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="warning">
+  <strong>Modo solo lectura:</strong> el rol <em>Auditor</em> puede consultar expedientes, dictámenes
+  e historial, pero no modificar datos ni avanzar pasos del proceso.
+</div>
+
+<h2 id="navegacion">4. Navegación general</h2>
+
+<p>
+  Tras iniciar sesión, la interfaz se divide en dos zonas: un <strong>menú lateral izquierdo</strong>
+  con acceso a todos los módulos, y un <strong>área principal</strong> con el contenido de la sección activa.
+  La barra superior muestra el título de la página y, cuando hay un expediente en curso, un enlace al
+  proceso activo con su folio y paso actual.
+</p>
+
+<figure class="screenshot">
+  <img src="pantallas/02-dashboard.png" alt="Panel de control principal">
+  <figcaption>Figura 2 — Dashboard: indicadores, acceso al proyecto demo y centro de procesos</figcaption>
+</figure>
+
+<h3>4.1 Menú principal</h3>
+<table>
+  <thead><tr><th>Sección</th><th>Función</th></tr></thead>
+  <tbody>
+    <tr><td>Dashboard</td><td>Panel de control con estadísticas y accesos rápidos</td></tr>
+    <tr><td>Bandeja de trabajo</td><td>Tareas pendientes y expedientes asignados al usuario</td></tr>
+    <tr><td>Expedientes</td><td>Listado y detalle de todos los expedientes MITA</td></tr>
+    <tr><td>Base de Conocimiento</td><td>Disciplinas, fuentes y datos validados (RF-01)</td></tr>
+    <tr><td>Mapa Geoespacial</td><td>Capas SIG y zonas de intervención (RF-03)</td></tr>
+    <tr><td>Proceso Operativo</td><td>Vista kanban del flujo de 7 pasos</td></tr>
+    <tr><td>Metodología MITA</td><td>Marco conceptual y ejes de acción</td></tr>
+    <tr><td>Proyecto Demo</td><td>Proyecto de referencia EDOMEX DIABETES</td></tr>
+    <tr><td>Motor Analógico</td><td>Evaluación analógica de propuestas (RF-06)</td></tr>
+    <tr><td>Dictámenes</td><td>Emisión y consulta de dictámenes oficiales (RF-08)</td></tr>
+    <tr><td>Perfiles SNI</td><td>Investigadores recomendados por área (RF-02)</td></tr>
+    <tr><td>Reportes</td><td>Indicadores de impacto y lecciones aprendidas (RF-11)</td></tr>
+  </tbody>
+</table>
+
+<figure class="screenshot">
+  <img src="pantallas/03-bandeja.png" alt="Bandeja de trabajo">
+  <figcaption>Figura 3 — Bandeja de trabajo: tareas pendientes y expedientes recientes</figcaption>
+</figure>
+
+<h2 id="proceso">5. Proceso operativo de 7 pasos</h2>
+
+<p>
+  El corazón de MITA es el <strong>proceso operativo</strong>, visible en cada expediente mediante un
+  stepper horizontal y en la vista kanban del menú <em>Proceso Operativo</em>.
+  Cada paso vincula herramientas específicas de la plataforma y un rol responsable.
+</p>
+
+<figure class="screenshot">
+  <img src="pantallas/08-proceso-operativo.png" alt="Vista kanban del proceso operativo">
+  <figcaption>Figura 4 — Proceso operativo: expedientes agrupados por paso del flujo</figcaption>
+</figure>
+
+<table>
+  <thead>
+    <tr><th>Paso</th><th>Nombre</th><th>Rol</th><th>Módulo principal</th><th>Resultado</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>Definición del asunto</td><td>Dependencia</td><td>Expedientes</td><td>Folio MITA creado</td></tr>
+    <tr><td>2</td><td>Recopilación de conocimiento</td><td>Analista</td><td>Base de Conocimiento</td><td>Disciplinas vinculadas</td></tr>
+    <tr><td>3</td><td>Organización y relación</td><td>Analista</td><td>Mapa + Interculturalidad</td><td>Cruce interdisciplinario</td></tr>
+    <tr><td>4</td><td>Análisis y analogía</td><td>Analista</td><td>Motor Analógico</td><td>Puntuación analógica</td></tr>
+    <tr><td>5</td><td>Generación de opciones</td><td>Analista</td><td>Proyecto Demo</td><td>Alternativas de solución</td></tr>
+    <tr><td>6</td><td>Evaluación y selección</td><td>Investigador SNI</td><td>Perfiles SNI</td><td>Opción seleccionada</td></tr>
+    <tr><td>7</td><td>Dictamen de validación</td><td>Administrador</td><td>Dictámenes</td><td>PDF oficial + seguimiento</td></tr>
+  </tbody>
+</table>
+
+<h2 id="expedientes">6. Gestión de expedientes</h2>
+
+<h3>6.1 Listado de expedientes</h3>
+<p>Muestra todos los expedientes registrados con folio, título, paso actual y estado del flujo.</p>
+
+<figure class="screenshot">
+  <img src="pantallas/04-expedientes.png" alt="Listado de expedientes">
+  <figcaption>Figura 5 — Listado de expedientes MITA</figcaption>
+</figure>
+
+<h3>6.2 Crear un expediente (Paso 1)</h3>
+<p>El rol <em>Dependencia</em> registra una nueva iniciativa completando:</p>
+<ul>
+  <li>Título y descripción del asunto</li>
+  <li>Solicitante y dependencia responsable</li>
+  <li>Datos de contacto (opcional)</li>
+</ul>
+<p>Al guardar, el sistema genera un folio único y establece un plazo de atención de 30 días.</p>
+
+<figure class="screenshot">
+  <img src="pantallas/05-expediente-nuevo.png" alt="Formulario de nuevo expediente">
+  <figcaption>Figura 6 — Registro de nuevo expediente (Paso 1)</figcaption>
+</figure>
+
+<h3>6.3 Detalle del expediente</h3>
+<p>
+  La pantalla de detalle concentra toda la operación del flujo: barra de progreso, stepper de 7 pasos,
+  panel de herramientas del paso activo, formularios de captura y botones para guardar o avanzar.
+</p>
+
+<figure class="screenshot">
+  <img src="pantallas/06-expediente-paso6.png" alt="Expediente demo en paso 6">
+  <figcaption>Figura 7 — Expediente demo activo en Paso 6 (evaluación SNI). Folio: MITA-DEMO-2026-ACTIVO</figcaption>
+</figure>
+
+<h4>Elementos de la pantalla de detalle</h4>
+<ul>
+  <li><strong>Barra de progreso:</strong> porcentaje completado del flujo (0–100 %).</li>
+  <li><strong>Stepper:</strong> pasos completados (verde), paso actual (resaltado) y pendientes (gris).</li>
+  <li><strong>Panel de herramientas:</strong> enlaces directos a módulos relevantes para el paso activo.</li>
+  <li><strong>Formulario del paso:</strong> campos y acciones específicas (disciplinas, zonas, evaluación, opciones, etc.).</li>
+  <li><strong>Botones Guardar / Avanzar paso:</strong> persisten datos y, cuando el paso está completo, mueven el expediente al siguiente paso.</li>
+</ul>
+
+<h3>6.4 Modo consulta (Auditor)</h3>
+<p>
+  Al ingresar como auditor, el expediente dictaminado se abre en modo solo lectura.
+  Aparece un aviso amarillo y los controles de edición quedan deshabilitados.
+</p>
+
+<figure class="screenshot">
+  <img src="pantallas/07-expediente-dictaminado.png" alt="Expediente dictaminado en modo consulta">
+  <figcaption>Figura 8 — Expediente dictaminado (MITA-DEMO-2026-DICTAMINADO) en modo consulta para auditoría</figcaption>
+</figure>
+
+<h2 id="modulos">7. Módulos de la plataforma</h2>
+
+<h3>7.1 Base de Conocimiento (Paso 2)</h3>
+<p>
+  Consulta las disciplinas validadas (SEDESA, INEGI, CECyTEM, SNI, etc.), su nivel de confiabilidad
+  y aportaciones clave. Desde el expediente, el enlace incluye parámetros <code>?expediente=X&amp;paso=2</code>
+  para mantener el contexto del flujo.
+</p>
+
+<figure class="screenshot">
+  <img src="pantallas/09-base-conocimiento.png" alt="Base de conocimiento">
+  <figcaption>Figura 9 — Base de Conocimiento interdisciplinaria</figcaption>
+</figure>
+
+<h3>7.2 Mapa Geoespacial (Paso 3)</h3>
+<p>
+  Visualiza zonas de intervención del Corredor Oriente y capas geográficas con prevalencia de diabetes.
+  Permite contextualizar territorialmente la propuesta y seleccionar hotspots para el expediente.
+</p>
+
+<figure class="screenshot">
+  <img src="pantallas/10-mapa-geoespacial.png" alt="Mapa geoespacial">
+  <figcaption>Figura 10 — Mapa geoespacial con zonas de intervención</figcaption>
+</figure>
+
+<h3>7.3 Metodología MITA</h3>
+<p>
+  Describe los ejes de acción, el marco intercultural-transdisciplinario y los criterios de calidad
+  que sustentan la evaluación analógica.
+</p>
+
+<figure class="screenshot">
+  <img src="pantallas/11-metodologia.png" alt="Metodología MITA">
+  <figcaption>Figura 11 — Metodología y ejes de acción MITA</figcaption>
+</figure>
+
+<h3>7.4 Proyecto de referencia (Paso 5)</h3>
+<p>
+  Presenta el proyecto EDOMEX DIABETES 2026–2032: objetivo, metas globales, ejes de acción y síntesis
+  interdisciplinaria. Sirve como contraste para generar opciones de solución en el expediente.
+</p>
+
+<figure class="screenshot">
+  <img src="pantallas/12-proyecto-demo.png" alt="Proyecto demo EDOMEX DIABETES">
+  <figcaption>Figura 12 — Proyecto de referencia EDOMEX DIABETES 2026–2032</figcaption>
+</figure>
+
+<h3>7.5 Perfiles SNI (Paso 6)</h3>
+<p>
+  Lista investigadores del Sistema Nacional de Investigadores recomendados por área del saber.
+  En el Paso 6, el investigador selecciona la opción de solución más viable respaldada técnicamente.
+</p>
+
+<figure class="screenshot">
+  <img src="pantallas/13-perfiles-sni.png" alt="Perfiles SNI">
+  <figcaption>Figura 13 — Perfiles SNI vinculados al expediente</figcaption>
+</figure>
+
+<h2 id="demo">8. Recorrido del proyecto demo</h2>
+
+<p>El entorno incluye dos expedientes precargados para practicar el flujo sin capturar datos reales:</p>
+
+<table>
+  <thead><tr><th>Folio</th><th>Estado</th><th>Uso recomendado</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>MITA-DEMO-2026-ACTIVO</code></td>
+      <td>Paso 6 — Evaluación SNI</td>
+      <td>Completar selección de opción (investigador) y emitir dictamen (admin)</td>
+    </tr>
+    <tr>
+      <td><code>MITA-DEMO-2026-DICTAMINADO</code></td>
+      <td>Dictaminado y en seguimiento</td>
+      <td>Consulta de auditoría, reportes e indicadores de impacto</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Recorrido sugerido paso a paso:</strong></p>
+<ol class="step-list">
+  <li>Entrar como <strong>dependencia</strong> y revisar el formulario de nuevo expediente (Paso 1).</li>
+  <li>Entrar como <strong>analista</strong> y abrir el expediente activo; revisar disciplinas, cruce y evaluación ya cargados (Pasos 2–5).</li>
+  <li>Entrar como <strong>investigador</strong>, seleccionar una opción de solución y avanzar al Paso 7.</li>
+  <li>Entrar como <strong>admin</strong>, emitir el Dictamen de Validación MITA en PDF.</li>
+  <li>Entrar como <strong>auditor</strong> y consultar el expediente dictaminado y los reportes de impacto.</li>
+</ol>
+
+<div class="note">
+  Contraseña de todos los usuarios demo: <strong>mita2026</strong>
+</div>
+
+<h2 id="dictamen">9. Dictámenes y reportes</h2>
+
+<h3>9.1 Dictámenes de validación</h3>
+<p>
+  El módulo de Dictámenes centraliza la emisión del documento oficial MITA (RF-08).
+  Incluye folio, fecha, puntuación analógica, opción seleccionada y enlace de descarga en PDF.
+</p>
+
+<figure class="screenshot">
+  <img src="pantallas/14-dictamenes.png" alt="Módulo de dictámenes">
+  <figcaption>Figura 14 — Consulta y emisión de Dictámenes de Validación MITA</figcaption>
+</figure>
+
+<h3>9.2 Reportes e indicadores</h3>
+<p>
+  El módulo de Reportes (RF-11) muestra indicadores de impacto, metas del proyecto de referencia
+  y lecciones aprendidas para el seguimiento post-dictamen.
+</p>
+
+<figure class="screenshot">
+  <img src="pantallas/15-reportes.png" alt="Reportes e indicadores">
+  <figcaption>Figura 15 — Indicadores de impacto y lecciones aprendidas</figcaption>
+</figure>
+
+<h2 id="faq">10. Preguntas frecuentes</h2>
+
+<h4>¿No puedo editar un expediente?</h4>
+<p>
+  Verifique su rol: el auditor solo consulta. Los demás roles solo gestionan expedientes cuando
+  el paso activo corresponde a su nivel de responsabilidad o cuando son creador/responsable del expediente.
+</p>
+
+<h4>¿Cómo avanzo al siguiente paso?</h4>
+<p>
+  Complete los campos requeridos del paso activo, pulse <strong>Guardar</strong> y luego
+  <strong>Avanzar al siguiente paso</strong>. El sistema valida que se cumplan los criterios mínimos
+  (por ejemplo, al menos 2 disciplinas en el Paso 2).
+</p>
+
+<h4>¿Dónde veo mis tareas pendientes?</h4>
+<p>En <strong>Bandeja de trabajo</strong> aparecen las tareas asignadas a su usuario con enlace directo al expediente.</p>
+
+<h4>¿Cómo reinicio los datos demo?</h4>
+<p>Ejecute en consola del servidor: <code>python manage.py seed_mita</code>. Esto recrea usuarios, expedientes y datos de demostración.</p>
+
+<h4>¿Cómo exporto este manual?</h4>
+<p>
+  Abra este archivo HTML en el navegador y use <strong>Imprimir → Guardar como PDF</strong>
+  para generar una versión imprimible con todas las pantallas incluidas.
+</p>
+
+<hr style="margin-top:3rem;border:none;border-top:1px solid var(--border);">
+<p style="font-size:0.85rem;color:var(--muted);text-align:center;">
+  Plataforma MITA — Gobierno del Estado de México · Documento generado automáticamente · Mayo 2026
+</p>
+
+</body>
+</html>

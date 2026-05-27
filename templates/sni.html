@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Perfiles SNI — MITA{% endblock %}
+{% block page_title %}Integración SNI (RF-02, RF-06){% endblock %}
+
+{% block content %}
+{% if expediente %}
+<div class="alert alert-info">
+  <strong>Paso {{ paso_proceso }} del proceso operativo</strong> — Vinculación SNI para
+  <a href="{% url 'expediente-detalle' expediente.pk %}">{{ expediente.folio }}</a>.
+</div>
+{% endif %}
+<p style="margin-bottom:1rem;color:var(--mita-muted);">
+  Módulo de búsqueda y vinculación de investigadores SNI por perfil especializado.
+</p>
+<div class="grid grid-2">
+  {% for perfil in perfiles %}
+  <div class="card">
+    <h3>{{ perfil.titulo }}</h3>
+    <p><span class="badge badge-info">{{ perfil.area }}</span>
+       <span class="badge badge-warning">{{ perfil.nivel }}</span></p>
+    <p style="margin-top:0.75rem;font-size:0.9rem;">{{ perfil.funcion }}</p>
+  </div>
+  {% empty %}
+  <p>Ejecute seed_mita para cargar perfiles SNI.</p>
+  {% endfor %}
+</div>
+{% endblock %}

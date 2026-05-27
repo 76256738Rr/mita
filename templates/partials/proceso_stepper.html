@@ -1,0 +1,15 @@
+{% load static %}
+<div class="stepper {% if compact %}stepper-compact{% endif %}">
+  {% for p in pasos_estado %}
+  <a href="{% if expediente and p.activo %}#paso-activo{% elif expediente %}#{% else %}{% url 'proceso' %}#paso-{{ p.paso }}{% endif %}"
+     class="step {% if p.completo %}step-done{% elif p.activo %}step-active{% endif %}"
+     title="{{ p.nombre }}">
+    <div class="step-circle">{% if p.completo %}✓{% else %}{{ p.paso }}{% endif %}</div>
+    <div class="step-label">{{ p.nombre|truncatechars:20 }}</div>
+    {% if show_modulo %}<div class="step-modulo">{{ p.modulo|truncatechars:16 }}</div>{% endif %}
+  </a>
+  {% if not forloop.last %}
+  <div class="step-line {% if p.completo %}step-line-done{% endif %}"></div>
+  {% endif %}
+  {% endfor %}
+</div>

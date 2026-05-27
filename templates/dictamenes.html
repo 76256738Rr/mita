@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Dictámenes — MITA{% endblock %}
+{% block page_title %}Gestión de Dictámenes (RF-08){% endblock %}
+
+{% block content %}
+<div style="margin-bottom:1rem;">
+  <a href="{% url 'analogia' %}" class="btn btn-primary">Nueva evaluación</a>
+</div>
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Folio</th>
+        <th>Asunto</th>
+        <th>Resultado</th>
+        <th>Puntuación</th>
+        <th>Fecha</th>
+        <th>PDF</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in dictamenes %}
+      <tr>
+        <td><strong>{{ d.folio }}</strong></td>
+        <td>{{ d.propuesta.titulo|truncatechars:60 }}</td>
+        <td>
+          <span class="badge {% if d.resultado == 'APROBADO' %}badge-success{% else %}badge-warning{% endif %}">
+            {{ d.resultado }}
+          </span>
+        </td>
+        <td>{{ d.puntuacion }}/100</td>
+        <td>{{ d.emitido_en|date:"d/m/Y H:i" }}</td>
+        <td>
+          {% if d.pdf_archivo %}
+          <a href="/api/mita/dictamen/{{ d.pk }}/pdf/" target="_blank">Descargar</a>
+          {% else %}—{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6">No hay dictámenes emitidos. Genere uno desde el Motor Analógico vía API.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
