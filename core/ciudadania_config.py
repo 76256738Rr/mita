@@ -38,6 +38,39 @@ ETIQUETAS_UBICACION = {
     'seguridad': 'Instancias de seguridad y denuncia en Edomex',
     'economia': 'Oficinas de apoyo económico en Edomex',
     'corrupcion': 'Instancias de denuncia anticorrupción en Edomex',
+    'agua': 'Organismos de agua y puntos de atención en Edomex',
+}
+CAMPO_IMPACTO_SOCIAL = {
+    'name': 'impacto_social',
+    'label': '¿Qué tan grave considera el problema?',
+    'type': 'select',
+    'required': True,
+    'options': [
+        'Bajo',
+        'Moderado',
+        'Alto',
+        'Crítico'
+    ]
+}
+
+CAMPO_FRECUENCIA = {
+    'name': 'frecuencia_problema',
+    'label': '¿Con qué frecuencia ocurre?',
+    'type': 'select',
+    'required': True,
+    'options': [
+        'Primera vez',
+        'Ocasional',
+        'Frecuente',
+        'Diario'
+    ]
+}
+
+CAMPO_AFECTADOS = {
+    'name': 'personas_afectadas',
+    'label': 'Personas afectadas aproximadamente',
+    'type': 'number',
+    'required': False,
 }
 
 EJES_CIUDADANIA = {
@@ -67,8 +100,12 @@ EJES_CIUDADANIA = {
              'options': ['Sí — IMSS', 'Sí — ISSSTE', 'Sí — IMSS-Bienestar', 'No', 'No sabe']},
             {'name': 'urgencia', 'label': 'Nivel de urgencia', 'type': 'select', 'required': True,
              'options': ['Baja', 'Media', 'Alta', 'Emergencia']},
+    CAMPO_IMPACTO_SOCIAL,
+    CAMPO_FRECUENCIA,
+    CAMPO_AFECTADOS,
         ],
     },
+
     'educacion': {
         'nombre': 'Educación',
         'icono': '📚',
@@ -89,6 +126,8 @@ EJES_CIUDADANIA = {
              'options': ['Infraestructura', 'Bullying', 'Falta de acceso', 'Becas', 'Calidad docente', 'Otro']},
             {'name': 'descripcion_problema', 'label': 'Describa la situación', 'type': 'textarea', 'required': True},
             {'name': 'beneficiarios', 'label': '¿Cuántas personas se ven afectadas?', 'type': 'number', 'required': False},
+CAMPO_IMPACTO_SOCIAL,
+CAMPO_FRECUENCIA,
         ],
     },
     'corrupcion': {
@@ -113,6 +152,9 @@ EJES_CIUDADANIA = {
              'options': ['Sí — documentos', 'Sí — testigos', 'Sí — ambos', 'No']},
             {'name': 'anonimo', 'label': '¿Desea permanecer en anonimato?', 'type': 'select', 'required': True,
              'options': ['Sí', 'No']},
+             CAMPO_IMPACTO_SOCIAL,
+CAMPO_FRECUENCIA,
+CAMPO_AFECTADOS,
         ],
     },
     'economia': {
@@ -133,6 +175,9 @@ EJES_CIUDADANIA = {
             {'name': 'descripcion_problema', 'label': 'Describa su situación económica', 'type': 'textarea', 'required': True},
             {'name': 'sector', 'label': 'Sector o actividad', 'type': 'text', 'required': False},
             {'name': 'apoyo_solicitado', 'label': '¿Qué apoyo solicita?', 'type': 'text', 'required': True},
+        CAMPO_IMPACTO_SOCIAL,
+CAMPO_FRECUENCIA,
+CAMPO_AFECTADOS,
         ],
     },
     'empleo': {
@@ -158,6 +203,9 @@ EJES_CIUDADANIA = {
              'condicion_edad_min': 50,
              'options': ['Tiempo completo', 'Medio tiempo', 'Trabajo desde casa', 'Empleo temporal', 'Reconversión profesional', 'No estoy seguro']},
             {'name': 'descripcion_problema', 'label': 'Describa su situación laboral', 'type': 'textarea', 'required': True},
+       CAMPO_IMPACTO_SOCIAL,
+CAMPO_FRECUENCIA,
+CAMPO_AFECTADOS,
         ],
     },
     'seguridad': {
@@ -180,9 +228,134 @@ EJES_CIUDADANIA = {
             {'name': 'descripcion_problema', 'label': 'Describa lo ocurrido', 'type': 'textarea', 'required': True},
             {'name': 'denuncia_previa', 'label': '¿Presentó denuncia anterior?', 'type': 'select', 'required': True,
              'options': ['Sí — Fiscalía', 'Sí — Ministerio Público en línea', 'No']},
+         CAMPO_IMPACTO_SOCIAL,
+CAMPO_FRECUENCIA,
+CAMPO_AFECTADOS,
         ],
     },
+'agua': {
+    'nombre': 'Agua',
+    'icono': '💧',
+    'color': '#0891b2',
+
+    'etiquetas_busqueda': [
+        'desabasto',
+        'fuga',
+        'agua contaminada',
+        'presión baja',
+        'drenaje',
+        'inundación',
+        'infraestructura hidráulica',
+        'organismo operador',
+        'CAEM'
+    ],
+
+    'descripcion': 'Desabasto, fugas, contaminación, presión baja y problemas de infraestructura hídrica.',
+    'ubicaciones_titulo': ETIQUETAS_UBICACION['agua'],
+
+    'dependencias': [
+        {
+            'clave': 'caem',
+            'nombre': 'CAEM — Comisión del Agua del Estado de México',
+            'rol': 'Coordinación hídrica estatal'
+        },
+        {
+            'clave': 'organismo_agua',
+            'nombre': 'Organismo operador municipal de agua',
+            'rol': 'Atención local'
+        },
+        {
+            'clave': 'mita',
+            'nombre': 'Coordinación MITA',
+            'rol': 'Análisis territorial y prevención'
+        },
+    ],
+
+    'campos': CAMPOS_CONTACTO + [
+        MUNICIPIO_EDOMEX,
+
+        {
+            'name': 'colonia',
+            'label': 'Colonia o comunidad',
+            'type': 'text',
+            'required': True
+        },
+
+        {
+            'name': 'tipo_problema_agua',
+            'label': 'Tipo de problemática',
+            'type': 'select',
+            'required': True,
+            'options': [
+                'Desabasto',
+                'Fuga',
+                'Agua contaminada',
+                'Presión baja',
+                'Drenaje',
+                'Inundación',
+                'Otro'
+            ]
+        },
+
+        {
+            'name': 'frecuencia',
+            'label': 'Frecuencia',
+            'type': 'select',
+            'required': True,
+            'options': [
+                'Una vez',
+                'Ocasional',
+                'Frecuente',
+                'Permanente'
+            ]
+        },
+
+        {
+            'name': 'personas_afectadas',
+            'label': 'Personas afectadas aproximadamente',
+            'type': 'number',
+            'required': False
+        },
+
+        {
+            'name': 'descripcion_problema',
+            'label': 'Describa la problemática del agua',
+            'type': 'textarea',
+            'required': True
+        },
+
+        {
+            'name': 'evidencia',
+            'label': '¿Cuenta con evidencia?',
+            'type': 'select',
+            'required': True,
+            'options': [
+                'Sí — foto/video',
+                'Sí — documento',
+                'Sí — testigos',
+                'No'
+            ]
+        },
+
+        {
+            'name': 'urgencia',
+            'label': 'Nivel de urgencia',
+            'type': 'select',
+            'required': True,
+            'options': [
+                'Baja',
+                'Media',
+                'Alta',
+                'Crítica'
+            ]
+        },
+
+        CAMPO_IMPACTO_SOCIAL,
+    ],
+},
 }
+
+
 
 
 def get_eje_config(eje_slug):

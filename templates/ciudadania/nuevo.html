@@ -189,15 +189,50 @@
       mapaCiudadania.fitBounds(bounds.pad(0.15));
     }
   }
+async function filtrarUbicaciones(municipio) {
+  if (!ejeSlug) return;
 
-  async function filtrarUbicaciones(municipio) {
-    if (!ejeSlug) return;
-    const q = municipio ? `?municipio=${encodeURIComponent(municipio)}` : '';
-    const res = await fetch(`/ciudadania/api/eje/${ejeSlug}/ubicaciones/${q}`);
-    const data = await res.json();
-    ubicacionesActuales = data.ubicaciones || [];
-    pintarUbicaciones(ubicacionesActuales);
+  const q = municipio
+    ? `?municipio=${encodeURIComponent(municipio)}`
+    : '';
+
+  const res = await fetch(`/ciudadania/api/eje/${ejeSlug}/ubicaciones/${q}`);
+  const data = await res.json();
+
+  ubicacionesActuales = data.ubicaciones || [];
+
+  // NUEVO: mostrar etiquetas de búsqueda
+  if (data.etiquetas_busqueda) {
+    console.log('Etiquetas IA:', data.etiquetas_busqueda);
+
+    const buscador = document.getElementById('etiquetas-busqueda');
+
+    if (buscador) {
+      buscador.innerHTML = '';
+
+      data.etiquetas_busqueda.forEach(tag => {
+        const span = document.createElement('span');
+
+        span.style.cssText = `
+          display:inline-block;
+          margin:4px;
+          padding:6px 12px;
+          border-radius:999px;
+          background:#0ea5e9;
+          color:white;
+          font-size:12px;
+          font-weight:600;
+        `;
+
+        span.textContent = tag;
+
+        buscador.appendChild(span);
+      });
+    }
   }
+
+  pintarUbicaciones(ubicacionesActuales);
+}
 
   async function cargarCentrosSalud(municipio) {
     const sel = document.getElementById('select-centro-salud');

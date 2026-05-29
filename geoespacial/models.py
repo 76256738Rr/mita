@@ -81,6 +81,7 @@ class PuntoAtencionEdomex(models.Model):
         SEGURIDAD = 'seguridad', 'Seguridad'
         ECONOMIA = 'economia', 'Economía'
         CORRUPCION = 'corrupcion', 'Corrupción'
+        AGUA = 'agua', 'Agua'
 
     slug = models.SlugField(unique=True)
     nombre = models.CharField(max_length=200)
