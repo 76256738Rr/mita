@@ -3,43 +3,393 @@
 {% block page_title %}Gestión de Dictámenes (RF-08){% endblock %}
 
 {% block content %}
-<div style="margin-bottom:1rem;">
-  <a href="{% url 'analogia' %}" class="btn btn-primary">Nueva evaluación</a>
+
+<style>
+
+/* =========================================================
+   ACCIONES SUPERIORES
+========================================================= */
+
+.dictamen-actions{
+    margin-bottom:1.5rem;
+}
+
+.dictamen-actions .btn{
+    background:linear-gradient(
+        135deg,
+        #2563eb,
+        #1d4ed8
+    ) !important;
+
+    border:none !important;
+
+    border-radius:16px;
+
+    padding:.95rem 1.4rem;
+
+    font-weight:700;
+
+    box-shadow:
+        0 10px 24px rgba(37,99,235,.18);
+
+    transition:all .25s ease;
+}
+
+.dictamen-actions .btn:hover{
+    transform:translateY(-3px);
+
+    box-shadow:
+        0 16px 30px rgba(37,99,235,.25);
+}
+
+/* =========================================================
+   CARD PRINCIPAL
+========================================================= */
+
+.dictamen-card{
+    background:
+        linear-gradient(
+            145deg,
+            #ffffff 0%,
+            #f8fbff 100%
+        ) !important;
+
+    border:1px solid #dbeafe !important;
+
+    border-radius:28px !important;
+
+    overflow:hidden;
+
+    box-shadow:
+        0 10px 30px rgba(15,23,42,.05),
+        0 3px 12px rgba(15,23,42,.04);
+
+    position:relative;
+}
+
+/* LINEA SUPERIOR */
+
+.dictamen-card::before{
+    content:'';
+
+    position:absolute;
+
+    top:0;
+    left:0;
+
+    width:100%;
+    height:5px;
+
+    background:linear-gradient(
+        90deg,
+        #2563eb,
+        #3b82f6,
+        #60a5fa
+    );
+}
+
+/* =========================================================
+   TABLA
+========================================================= */
+
+.dictamen-table{
+    width:100%;
+
+    border-collapse:collapse;
+}
+
+/* HEADER */
+
+.dictamen-table thead{
+    background:#eff6ff;
+}
+
+.dictamen-table thead th{
+    padding:1rem;
+
+    color:#0f172a;
+
+    font-weight:800;
+
+    font-size:.9rem;
+
+    border-bottom:1px solid #dbeafe;
+
+    text-align:left;
+}
+
+/* FILAS */
+
+.dictamen-table tbody tr{
+    transition:all .2s ease;
+}
+
+.dictamen-table tbody tr:hover{
+    background:#f8fbff;
+}
+
+/* CELDAS */
+
+.dictamen-table td{
+    padding:1rem;
+
+    color:#0f172a;
+
+    border-bottom:1px solid #eef2f7;
+
+    vertical-align:middle;
+
+    font-size:.9rem;
+}
+
+/* FOLIO */
+
+.dictamen-folio{
+    color:#2563eb;
+
+    font-weight:800;
+}
+
+/* ASUNTO */
+
+.dictamen-asunto{
+    color:#1e293b;
+
+    line-height:1.6;
+}
+
+/* PUNTUACIÓN */
+
+.dictamen-score{
+    font-weight:800;
+
+    color:#1d4ed8;
+}
+
+/* FECHA */
+
+.dictamen-date{
+    color:#334155;
+}
+
+/* =========================================================
+   BADGES
+========================================================= */
+
+.dictamen-badge{
+    display:inline-flex;
+
+    align-items:center;
+    justify-content:center;
+
+    padding:.5rem .9rem;
+
+    border-radius:999px;
+
+    font-size:.72rem;
+    font-weight:800;
+
+    letter-spacing:.3px;
+}
+
+.dictamen-approved{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.dictamen-warning{
+    background:#fef3c7;
+    color:#92400e;
+}
+
+/* =========================================================
+   LINKS PDF
+========================================================= */
+
+.dictamen-link{
+    display:inline-flex;
+
+    align-items:center;
+    justify-content:center;
+
+    padding:.55rem .95rem;
+
+    background:#eff6ff;
+
+    border:1px solid #bfdbfe;
+
+    border-radius:14px;
+
+    color:#2563eb;
+
+    text-decoration:none;
+
+    font-weight:700;
+
+    transition:all .22s ease;
+}
+
+.dictamen-link:hover{
+    background:#2563eb;
+
+    color:#ffffff;
+
+    transform:translateY(-2px);
+}
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.dictamen-empty{
+    text-align:center;
+
+    padding:2rem !important;
+
+    color:#64748b;
+
+    font-weight:600;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:900px){
+
+    .dictamen-card{
+        overflow-x:auto;
+    }
+
+    .dictamen-table{
+        min-width:850px;
+    }
+
+}
+
+</style>
+
+<!-- BOTÓN SUPERIOR -->
+
+<div class="dictamen-actions">
+
+  <a href="{% url 'analogia' %}" class="btn btn-primary">
+    Nueva evaluación
+  </a>
+
 </div>
-<div class="card">
-  <table>
+
+<!-- TABLA -->
+
+<div class="card dictamen-card">
+
+  <table class="dictamen-table">
+
     <thead>
+
       <tr>
+
         <th>Folio</th>
+
         <th>Asunto</th>
+
         <th>Resultado</th>
+
         <th>Puntuación</th>
+
         <th>Fecha</th>
+
         <th>PDF</th>
+
       </tr>
+
     </thead>
+
     <tbody>
+
       {% for d in dictamenes %}
+
       <tr>
-        <td><strong>{{ d.folio }}</strong></td>
-        <td>{{ d.propuesta.titulo|truncatechars:60 }}</td>
+
         <td>
-          <span class="badge {% if d.resultado == 'APROBADO' %}badge-success{% else %}badge-warning{% endif %}">
+
+          <strong class="dictamen-folio">
+            {{ d.folio }}
+          </strong>
+
+        </td>
+
+        <td class="dictamen-asunto">
+
+          {{ d.propuesta.titulo|truncatechars:60 }}
+
+        </td>
+
+        <td>
+
+          <span class="dictamen-badge {% if d.resultado == 'APROBADO' %}dictamen-approved{% else %}dictamen-warning{% endif %}">
+
             {{ d.resultado }}
+
           </span>
+
         </td>
-        <td>{{ d.puntuacion }}/100</td>
-        <td>{{ d.emitido_en|date:"d/m/Y H:i" }}</td>
+
         <td>
-          {% if d.pdf_archivo %}
-          <a href="/api/mita/dictamen/{{ d.pk }}/pdf/" target="_blank">Descargar</a>
-          {% else %}—{% endif %}
+
+          <span class="dictamen-score">
+            {{ d.puntuacion }}/100
+          </span>
+
         </td>
+
+        <td class="dictamen-date">
+
+          {{ d.emitido_en|date:"d/m/Y H:i" }}
+
+        </td>
+
+        <td>
+
+          {% if d.pdf_archivo %}
+
+          <a href="/api/mita/dictamen/{{ d.pk }}/pdf/"
+             target="_blank"
+             class="dictamen-link">
+
+             Descargar PDF
+
+          </a>
+
+          {% else %}
+
+          —
+
+          {% endif %}
+
+        </td>
+
       </tr>
+
       {% empty %}
-      <tr><td colspan="6">No hay dictámenes emitidos. Genere uno desde el Motor Analógico vía API.</td></tr>
+
+      <tr>
+
+        <td colspan="6" class="dictamen-empty">
+
+          No hay dictámenes emitidos.
+          Genere uno desde el Motor Analógico vía API.
+
+        </td>
+
+      </tr>
+
       {% endfor %}
+
     </tbody>
+
   </table>
+
 </div>
+
 {% endblock %}

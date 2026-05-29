@@ -4,66 +4,216 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>{% block title %}Plataforma MITA{% endblock %}</title>
+
   <link rel="stylesheet" href="{% static 'css/mita.css' %}">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   {% block extra_head %}{% endblock %}
 </head>
+
 <body>
+
   <div class="layout">
+
+    <!-- SIDEBAR -->
     <aside class="sidebar">
-      <div class="sidebar-brand">
-        <h1>MITA</h1>
-        <p>Multi-Intercultural-Transdisciplina Analógica</p>
-      </div>
-      <nav>
-        {% if user_rol == 'publico' %}
-        <a href="{% url 'ciudadania-portal' %}" class="{% if '/ciudadania' in request.path %}active{% endif %}">Ventanilla Ciudadana</a>
-        <a href="{% url 'ciudadania-nuevo' %}" class="{% if '/ciudadania/nuevo' in request.path %}active{% endif %}">Registrar problemática</a>
-        {% else %}
-        <a href="{% url 'dashboard' %}" class="{% if request.path == '/' %}active{% endif %}">Dashboard</a>
-        <a href="{% url 'bandeja' %}" class="{% if '/bandeja' in request.path %}active{% endif %}">Bandeja de trabajo</a>
-        <a href="{% url 'expedientes' %}" class="{% if '/expedientes' in request.path %}active{% endif %}">Expedientes</a>
-        <a href="{% url 'base-datos' %}" class="{% if '/base-datos' in request.path %}active{% endif %}">Base de Conocimiento</a>
-        <a href="{% url 'mapa' %}" class="{% if '/mapa' in request.path %}active{% endif %}">Mapa Geoespacial</a>
-        <a href="{% url 'proceso' %}" class="{% if '/proceso' in request.path %}active{% endif %}">Proceso Operativo</a>
-        <a href="{% url 'metodologia' %}" class="{% if '/metodologia' in request.path %}active{% endif %}">Metodología MITA</a>
-        <a href="{% url 'proyecto' %}" class="{% if '/proyecto' in request.path %}active{% endif %}">Proyecto Demo</a>
-        <a href="{% url 'analogia' %}" class="{% if '/analogia' in request.path %}active{% endif %}">Motor Analógico</a>
-        <a href="{% url 'dictamenes' %}" class="{% if '/dictamenes' in request.path %}active{% endif %}">Dictámenes</a>
-        <a href="{% url 'sni' %}" class="{% if '/sni' in request.path %}active{% endif %}">Perfiles SNI</a>
-        <a href="{% url 'reportes' %}" class="{% if '/reportes' in request.path %}active{% endif %}">Reportes</a>
-        <a href="/admin/">Administración</a>
-        {% endif %}
-        {% if user.is_authenticated %}
-        <a href="{% url 'logout' %}">Cerrar sesión ({{ user.username }})</a>
-        {% else %}
-        <a href="{% url 'login' %}">Iniciar sesión</a>
-        {% endif %}
-      </nav>
-    </aside>
-    <div class="main">
-      <header class="topbar">
-        <h2>{% block page_title %}Plataforma MITA{% endblock %}</h2>
-        <div style="text-align:right;">
-          {% if expediente_activo %}
-          <a href="{% url 'expediente-detalle' expediente_activo.pk %}" style="font-size:0.85rem;">
-            Proceso activo: <strong>{{ expediente_activo.folio }}</strong> (Paso {{ expediente_activo.paso_actual }}/7)
-          </a>
-          {% else %}
-          <span style="font-size:0.85rem;color:var(--mita-muted);">Gobierno del Estado de México</span>
-          {% endif %}
+
+      <div class="sidebar-brand premium-brand">
+
+
+        <div>
+          <h1>MITA</h1>
+
+          <p>
+            Multi-Intercultural-
+            Transdisciplina Analógica
+          </p>
         </div>
-      </header>
-      <main class="content">
-        {% if messages %}
-        {% for msg in messages %}
-        <div class="alert alert-{% if msg.tags == 'error' %}warning{% else %}success{% endif %}">{{ msg }}</div>
-        {% endfor %}
+
+      </div>
+
+      <nav>
+
+        {% if user_rol == 'publico' %}
+
+        <a href="{% url 'ciudadania-portal' %}"
+           class="{% if '/ciudadania' in request.path %}active{% endif %}">
+          🏛 Ventanilla Ciudadana
+        </a>
+
+        <a href="{% url 'ciudadania-nuevo' %}"
+           class="{% if '/ciudadania/nuevo' in request.path %}active{% endif %}">
+          ➕ Registrar problemática
+        </a>
+
+        {% else %}
+
+        <a href="{% url 'dashboard' %}"
+           class="{% if request.path == '/' %}active{% endif %}">
+          📊 Dashboard
+        </a>
+
+        <a href="{% url 'bandeja' %}"
+           class="{% if '/bandeja' in request.path %}active{% endif %}">
+          📥 Bandeja de trabajo
+        </a>
+
+        <a href="{% url 'expedientes' %}"
+           class="{% if '/expedientes' in request.path %}active{% endif %}">
+          📁 Expedientes
+        </a>
+
+        <a href="{% url 'base-datos' %}"
+           class="{% if '/base-datos' in request.path %}active{% endif %}">
+          🧠 Base de Conocimiento
+        </a>
+
+        <a href="{% url 'mapa' %}"
+           class="{% if '/mapa' in request.path %}active{% endif %}">
+          🗺️ Mapa Geoespacial
+        </a>
+
+        <a href="{% url 'proceso' %}"
+           class="{% if '/proceso' in request.path %}active{% endif %}">
+          ⚙️ Proceso Operativo
+        </a>
+
+        <a href="{% url 'metodologia' %}"
+           class="{% if '/metodologia' in request.path %}active{% endif %}">
+          📚 Metodología MITA
+        </a>
+
+        <a href="{% url 'proyecto' %}"
+           class="{% if '/proyecto' in request.path %}active{% endif %}">
+          🚀 Proyecto Demo
+        </a>
+
+        <a href="{% url 'analogia' %}"
+           class="{% if '/analogia' in request.path %}active{% endif %}">
+          🔬 Motor Analógico
+        </a>
+
+        <a href="{% url 'dictamenes' %}"
+           class="{% if '/dictamenes' in request.path %}active{% endif %}">
+          ⚖️ Dictámenes
+        </a>
+
+        <a href="{% url 'sni' %}"
+           class="{% if '/sni' in request.path %}active{% endif %}">
+          👨‍🔬 Perfiles SNI
+        </a>
+
+        <a href="{% url 'reportes' %}"
+           class="{% if '/reportes' in request.path %}active{% endif %}">
+          📈 Reportes
+        </a>
+
+        <a href="/admin/">
+          🔐 Administración
+        </a>
+
         {% endif %}
-        {% block content %}{% endblock %}
+
+        {% if user.is_authenticated %}
+
+        <a href="{% url 'logout' %}">
+          🚪 Cerrar sesión ({{ user.username }})
+        </a>
+
+        {% else %}
+
+        <a href="{% url 'login' %}">
+          🔑 Iniciar sesión
+        </a>
+
+        {% endif %}
+
+      </nav>
+
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main">
+
+      <!-- TOPBAR -->
+      <header class="topbar premium-topbar">
+
+        <div>
+
+          <h2>
+            {% block page_title %}
+            Centro de Inteligencia MITA
+            {% endblock %}
+          </h2>
+
+          <p class="topbar-subtitle">
+            Plataforma de Gestión Inteligente para el Buen Gobierno
+          </p>
+
+        </div>
+
+        <div class="topbar-status">
+
+          <div class="status-pill online">
+            <span class="dot"></span>
+            IA MITA ACTIVA
+          </div>
+
+          <div class="status-pill secure">
+            🔒 Seguridad Institucional
+          </div>
+
+          <div class="status-pill secure">
+            📡 Sistema Operativo
+          </div>
+
+          {% if expediente_activo %}
+
+          <a href="{% url 'expediente-detalle' expediente_activo.pk %}"
+             class="status-pill process-link">
+
+            📁 {{ expediente_activo.folio }}
+
+          </a>
+
+          {% endif %}
+
+        </div>
+
+      </header>
+
+      <!-- CONTENT -->
+      <main class="content">
+
+        {% if messages %}
+
+        {% for msg in messages %}
+
+        <div class="alert alert-{% if msg.tags == 'error' %}warning{% else %}success{% endif %}">
+          {{ msg }}
+        </div>
+
+        {% endfor %}
+
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+
       </main>
+
     </div>
+
   </div>
-  {% block extra_js %}{% endblock %}
+
+  {% block extra_js %}
+  {% endblock %}
+
 </body>
 </html>

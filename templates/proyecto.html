@@ -3,40 +3,418 @@
 {% block page_title %}Proyecto de Referencia{% endblock %}
 
 {% block content %}
+
+<style>
+
+/* =========================================================
+   INTRO CARD
+========================================================= */
+
+.proyecto-main-card{
+    position:relative;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffffff 0%,
+            #f8fbff 100%
+        ) !important;
+
+    border:1px solid #dbeafe !important;
+
+    border-radius:26px !important;
+
+    padding:1.8rem !important;
+
+    overflow:hidden;
+
+    box-shadow:
+        0 8px 25px rgba(15,23,42,.05),
+        0 3px 12px rgba(15,23,42,.04);
+
+    transition:all .28s ease;
+}
+
+.proyecto-main-card::before{
+    content:'';
+
+    position:absolute;
+
+    top:0;
+    left:0;
+
+    width:100%;
+    height:5px;
+
+    background:linear-gradient(
+        90deg,
+        #2563eb,
+        #3b82f6,
+        #60a5fa
+    );
+}
+
+.proyecto-main-card:hover{
+    transform:translateY(-4px);
+
+    box-shadow:
+        0 18px 40px rgba(37,99,235,.10),
+        0 8px 20px rgba(15,23,42,.06);
+}
+
+/* =========================================================
+   TITULOS
+========================================================= */
+
+.proyecto-title{
+    color:#0f172a;
+
+    font-weight:800;
+
+    line-height:1.4;
+
+    margin-bottom:.8rem;
+}
+
+.section-title{
+    color:#0f172a;
+
+    font-weight:800;
+
+    margin-bottom:1rem;
+}
+
+/* =========================================================
+   TEXTOS
+========================================================= */
+
+.proyecto-text{
+    color:#1e293b !important;
+
+    line-height:1.8;
+}
+
+.proyecto-muted{
+    color:#334155 !important;
+
+    margin-top:1rem;
+
+    background:#eff6ff;
+
+    border:1px solid #bfdbfe;
+
+    padding:1rem;
+
+    border-radius:16px;
+}
+
+/* =========================================================
+   ANALOGIA
+========================================================= */
+
+.analogia-card{
+    position:relative;
+
+    background:#ffffff !important;
+
+    border:1px solid #dbeafe !important;
+
+    border-radius:26px !important;
+
+    padding:1.8rem !important;
+
+    overflow:hidden;
+
+    box-shadow:
+        0 8px 25px rgba(15,23,42,.05),
+        0 3px 12px rgba(15,23,42,.04);
+
+    transition:all .28s ease;
+}
+
+.analogia-card:hover{
+    transform:translateY(-4px);
+
+    box-shadow:
+        0 18px 40px rgba(37,99,235,.10),
+        0 8px 20px rgba(15,23,42,.06);
+}
+
+.analogia-title{
+    color:#2563eb;
+
+    font-weight:800;
+
+    margin-bottom:1rem;
+}
+
+.analogia-list{
+    margin-top:1rem;
+
+    padding-left:1.4rem;
+}
+
+.analogia-list li{
+    margin-bottom:.8rem;
+
+    color:#1e293b;
+
+    line-height:1.7;
+}
+
+.analogia-principio{
+    margin-top:1.2rem;
+
+    padding:1rem;
+
+    background:#f8fafc;
+
+    border:1px solid #e2e8f0;
+
+    border-radius:16px;
+
+    color:#0f172a;
+
+    line-height:1.7;
+}
+
+/* =========================================================
+   EJES
+========================================================= */
+
+.ejes-grid{
+    margin-top:1rem;
+}
+
+.eje-card{
+    position:relative;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffffff 0%,
+            #f8fbff 100%
+        ) !important;
+
+    border:1px solid #dbeafe !important;
+
+    border-radius:24px !important;
+
+    padding:1.5rem !important;
+
+    overflow:hidden;
+
+    transition:all .28s ease;
+
+    box-shadow:
+        0 8px 25px rgba(15,23,42,.05),
+        0 3px 12px rgba(15,23,42,.04);
+}
+
+.eje-card::before{
+    content:'';
+
+    position:absolute;
+
+    top:0;
+    left:0;
+
+    width:100%;
+    height:5px;
+
+    background:linear-gradient(
+        90deg,
+        #2563eb,
+        #60a5fa
+    );
+}
+
+.eje-card:hover{
+    transform:translateY(-5px);
+
+    box-shadow:
+        0 18px 40px rgba(37,99,235,.10),
+        0 8px 20px rgba(15,23,42,.06);
+}
+
+.eje-title{
+    color:#0f172a;
+
+    font-weight:800;
+
+    margin-bottom:.6rem;
+
+    line-height:1.5;
+}
+
+.eje-origin{
+    color:#2563eb !important;
+
+    font-weight:700;
+
+    margin-bottom:1rem;
+}
+
+.eje-actions{
+    margin-top:.8rem;
+
+    padding-left:1.3rem;
+}
+
+.eje-actions li{
+    margin-bottom:.7rem;
+
+    color:#1e293b;
+
+    line-height:1.7;
+}
+
+.eje-meta{
+    margin-top:1.2rem;
+}
+
+.eje-meta .badge{
+    background:#dcfce7 !important;
+
+    color:#166534 !important;
+
+    border:none !important;
+
+    padding:.6rem 1rem;
+
+    border-radius:999px;
+
+    font-weight:700;
+}
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.empty-message{
+    color:#0f172a;
+
+    font-weight:700;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:900px){
+
+    .grid-2{
+        grid-template-columns:1fr;
+    }
+
+}
+
+</style>
+
 {% if proyecto %}
-<div class="card" style="margin-bottom:1.5rem;">
-  <h3>{{ proyecto.nombre }}</h3>
-  <p style="margin-top:0.5rem;">{{ proyecto.objetivo }}</p>
-  <p style="margin-top:0.5rem;font-size:0.9rem;color:var(--mita-muted);">{{ proyecto.enfoque }}</p>
+
+<!-- PROYECTO -->
+
+<div class="card proyecto-main-card" style="margin-bottom:1.5rem;">
+
+    <h3 class="proyecto-title">
+        {{ proyecto.nombre }}
+    </h3>
+
+    <p class="proyecto-text">
+        {{ proyecto.objetivo }}
+    </p>
+
+    <p class="proyecto-muted">
+        {{ proyecto.enfoque }}
+    </p>
+
 </div>
 
-<div class="card" style="margin-bottom:1.5rem;">
-  <h3>Analogía Sistémica</h3>
-  <p><strong>{{ proyecto.analogia.titulo }}</strong></p>
-  <ul style="margin-top:0.5rem;padding-left:1.25rem;font-size:0.9rem;">
-    {% for el in proyecto.analogia.elementos %}
-    <li><strong>{{ el.parte }}</strong> → {{ el.representa }}</li>
-    {% endfor %}
-  </ul>
-  <p style="margin-top:0.75rem;font-size:0.85rem;">{{ proyecto.analogia.principio }}</p>
-</div>
+<!-- ANALOGÍA -->
 
-<h3 style="margin-bottom:1rem;">Ejes de Acción</h3>
-<div class="grid grid-2">
-  {% for eje in ejes %}
-  <div class="card">
-    <h3>Eje {{ eje.numero }}: {{ eje.nombre }}</h3>
-    <p style="font-size:0.85rem;color:var(--mita-muted);">Origen: {{ eje.origen }}</p>
-    <ul style="margin-top:0.5rem;padding-left:1.25rem;font-size:0.85rem;">
-      {% for accion in eje.acciones %}
-      <li>{{ accion }}</li>
-      {% endfor %}
+<div class="card analogia-card" style="margin-bottom:1.5rem;">
+
+    <h3 class="section-title">
+        Analogía Sistémica
+    </h3>
+
+    <p class="analogia-title">
+        {{ proyecto.analogia.titulo }}
+    </p>
+
+    <ul class="analogia-list">
+
+        {% for el in proyecto.analogia.elementos %}
+
+        <li>
+            <strong>{{ el.parte }}</strong>
+            → {{ el.representa }}
+        </li>
+
+        {% endfor %}
+
     </ul>
-    <p style="margin-top:0.75rem;"><span class="badge badge-success">Meta: {{ eje.meta }}</span></p>
-  </div>
-  {% endfor %}
+
+    <div class="analogia-principio">
+        {{ proyecto.analogia.principio }}
+    </div>
+
 </div>
+
+<!-- EJES -->
+
+<h3 class="section-title">
+    Ejes de Acción
+</h3>
+
+<div class="grid grid-2 ejes-grid">
+
+    {% for eje in ejes %}
+
+    <div class="card eje-card">
+
+        <h3 class="eje-title">
+            Eje {{ eje.numero }}:
+            {{ eje.nombre }}
+        </h3>
+
+        <p class="eje-origin">
+            Origen: {{ eje.origen }}
+        </p>
+
+        <ul class="eje-actions">
+
+            {% for accion in eje.acciones %}
+
+            <li>
+                {{ accion }}
+            </li>
+
+            {% endfor %}
+
+        </ul>
+
+        <div class="eje-meta">
+
+            <span class="badge badge-success">
+                Meta: {{ eje.meta }}
+            </span>
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
 {% else %}
-<p>No hay proyecto de referencia cargado.</p>
+
+<p class="empty-message">
+    No hay proyecto de referencia cargado.
+</p>
+
 {% endif %}
+
 {% endblock %}

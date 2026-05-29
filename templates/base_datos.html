@@ -3,19 +3,25 @@
 {% block page_title %}Gestión de Información Validada (RF-01){% endblock %}
 
 {% block content %}
+
 {% if modo_seleccion %}
-<div class="alert alert-info">
-  <strong>Paso 2 del proceso operativo</strong> — Recopilación de conocimiento para
-  <a href="{% url 'expediente-detalle' expediente.pk %}">{{ expediente.folio }}</a>.
+<div class="alert alert-info" style="margin-bottom: 1.5rem;">
+  <strong>📚 Paso 2 del proceso operativo</strong> — Recopilación de conocimiento para
+  <a href="{% url 'expediente-detalle' expediente.pk %}" style="color: #1d4ed8; font-weight: 600;">{{ expediente.folio }}</a>.
   Seleccione disciplinas en el expediente y guarde el paso.
 </div>
 {% endif %}
 
-<p style="margin-bottom:1rem;color:var(--mita-muted);">
-  Repositorio central con {{ disciplinas.count }} disciplinas validadas de fuentes oficiales (SEDESA, INEGI, SNI, CECyTEM).
-</p>
+<!-- Texto intro con la clase correcta -->
+<div class="base-conocimiento-intro">
+  <span style="font-size: 1.2rem;">📚</span>
+  <span>Repositorio central con <strong>{{ disciplinas.count }}</strong> disciplinas validadas de fuentes oficiales 
+  (SEDESA, INEGI, SNI, CECyTEM).</span>
+</div>
 
-<div class="card">
+<!-- Card principal con la clase del diseño -->
+<div class="base-conocimiento-card">
+  
   <table>
     <thead>
       <tr>
@@ -29,22 +35,46 @@
     <tbody>
       {% for d in disciplinas %}
       <tr>
-        <td><strong>{{ d.nombre }}</strong><br><small style="color:var(--mita-muted);">{{ d.aportacion|truncatechars:80 }}</small></td>
-        <td>{{ d.area }}</td>
-        <td><span class="badge badge-info">{{ d.grupo }}</span></td>
-        <td style="font-size:0.85rem;">{{ d.dato_clave|truncatechars:100 }}</td>
-        <td>{{ d.nivel_confiabilidad }}%</td>
+        <td>
+          <strong>{{ d.nombre }}</strong>
+          <small>{{ d.aportacion|truncatechars:80 }}</small>
+        </td>
+        <td>{{ d.area|default:"—" }}</td>
+        <td>
+          <span class="badge-info">{{ d.grupo|default:"General" }}</span>
+        </td>
+        <td>{{ d.dato_clave|truncatechars:100|default:"—" }}</td>
+        <td style="text-align: center;">
+          {% with confiabilidad=d.nivel_confiabilidad|default:0 %}
+            {% if confiabilidad >= 80 %}
+              <span class="confiabilidad-alta">{{ confiabilidad }}%</span>
+            {% elif confiabilidad >= 50 %}
+              <span class="confiabilidad-media">{{ confiabilidad }}%</span>
+            {% else %}
+              <span class="confiabilidad-baja">{{ confiabilidad }}%</span>
+            {% endif %}
+          {% endwith %}
+        </td>
       </tr>
       {% empty %}
-      <tr><td colspan="5">No hay disciplinas. Ejecute: python manage.py seed_mita</td></tr>
+      <tr>
+        <td colspan="5" style="text-align: center; padding: 3rem;">
+          ⚠️ No hay disciplinas disponibles.<br>
+          <small style="color: #64748b;">Ejecute: <code style="background: #f1f5f9; padding: 0.2rem 0.5rem; border-radius: 8px;">python manage.py seed_mita</code></small>
+        </td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>
+  
 </div>
 
 {% if modo_seleccion %}
-<p style="margin-top:1rem;">
-  <a href="{% url 'expediente-detalle' expediente.pk %}" class="btn btn-primary">← Volver al expediente (Paso 2)</a>
-</p>
+<div style="margin-top: 1.5rem; text-align: center;">
+  <a href="{% url 'expediente-detalle' expediente.pk %}" class="btn btn-primary">
+    ← Volver al expediente (Paso 2)
+  </a>
+</div>
 {% endif %}
+
 {% endblock %}

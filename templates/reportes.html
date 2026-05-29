@@ -3,20 +3,353 @@
 {% block page_title %}Reportes e Indicadores de Impacto (RF-11){% endblock %}
 
 {% block content %}
-<div class="grid grid-2">
+
+<style>
+
+/* =========================================================
+   CONTENEDOR
+========================================================= */
+
+.reportes-grid{
+    gap:1.4rem;
+}
+
+/* =========================================================
+   CARD INDICADOR
+========================================================= */
+
+.report-card{
+    position:relative;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.98),
+            rgba(248,250,252,.98)
+        );
+
+    border:1px solid rgba(226,232,240,.9);
+
+    border-radius:24px;
+
+    padding:1.4rem;
+
+    overflow:hidden;
+
+    transition:all .28s ease;
+
+    box-shadow:
+        0 10px 28px rgba(15,23,42,.05),
+        0 4px 12px rgba(15,23,42,.04);
+}
+
+/* EFECTO SUPERIOR */
+
+.report-card::before{
+    content:'';
+
+    position:absolute;
+
+    top:0;
+    left:0;
+
+    width:100%;
+    height:5px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #2563eb,
+            #3b82f6,
+            #60a5fa
+        );
+}
+
+/* HOVER */
+
+.report-card:hover{
+    transform:translateY(-6px);
+
+    border-color:#bfdbfe;
+
+    box-shadow:
+        0 20px 45px rgba(15,23,42,.10),
+        0 8px 24px rgba(37,99,235,.10);
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.report-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:1rem;
+
+    margin-bottom:1rem;
+}
+
+.report-title{
+    font-size:1rem;
+    font-weight:800;
+
+    color:#0f172a;
+
+    line-height:1.5;
+
+    margin:0;
+}
+
+/* =========================================================
+   BADGES
+========================================================= */
+
+.report-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    padding:.42rem .85rem;
+
+    border-radius:999px;
+
+    font-size:.72rem;
+    font-weight:800;
+
+    background:#dbeafe;
+    color:#1d4ed8;
+
+    border:1px solid #bfdbfe;
+
+    white-space:nowrap;
+}
+
+/* =========================================================
+   VALORES
+========================================================= */
+
+.report-values{
+    margin-top:.8rem;
+}
+
+.report-current{
+    font-size:2rem;
+    font-weight:900;
+
+    color:#0f172a;
+
+    line-height:1;
+
+    margin-bottom:.35rem;
+}
+
+.report-current span{
+    font-size:1rem;
+    font-weight:700;
+
+    color:#475569;
+}
+
+.report-meta{
+    color:#334155;
+    font-size:.9rem;
+
+    margin-bottom:1rem;
+}
+
+/* =========================================================
+   BARRA
+========================================================= */
+
+.report-progress{
+    width:100%;
+    height:14px;
+
+    background:#e2e8f0;
+
+    border-radius:999px;
+
+    overflow:hidden;
+
+    position:relative;
+
+    margin-bottom:.9rem;
+}
+
+.report-progress-fill{
+    height:100%;
+
+    border-radius:999px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #2563eb,
+            #3b82f6,
+            #60a5fa
+        );
+
+    box-shadow:
+        0 4px 14px rgba(37,99,235,.30);
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.report-footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:1rem;
+
+    margin-top:.5rem;
+}
+
+.report-trend{
+    color:#0f172a;
+    font-size:.85rem;
+    font-weight:700;
+}
+
+.report-percent{
+    font-size:.82rem;
+    font-weight:800;
+
+    color:#2563eb;
+
+    background:#eff6ff;
+
+    padding:.35rem .7rem;
+
+    border-radius:999px;
+
+    border:1px solid #bfdbfe;
+}
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.report-empty{
+    background:#ffffff;
+
+    border-radius:22px;
+
+    padding:2rem;
+
+    text-align:center;
+
+    color:#475569;
+
+    border:1px dashed #cbd5e1;
+
+    box-shadow:
+        0 10px 25px rgba(15,23,42,.04);
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:900px){
+
+    .report-footer{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .report-current{
+        font-size:1.7rem;
+    }
+
+}
+
+</style>
+
+<div class="grid grid-2 reportes-grid">
+
   {% for ind in indicadores %}
-  <div class="card">
-    <h3>{{ ind.nombre }}</h3>
-    <p><span class="badge badge-info">{{ ind.get_sector_display }}</span></p>
-    <p style="margin-top:0.5rem;">Actual: <strong>{{ ind.valor_actual }} {{ ind.unidad }}</strong></p>
-    <p>Meta: {{ ind.meta }} {{ ind.unidad }}</p>
-    <div class="progress-bar" style="margin-top:0.5rem;">
-      <div class="fill" style="width:{% widthratio ind.valor_actual ind.meta 100 %}%"></div>
+
+  <div class="card report-card">
+
+    <!-- HEADER -->
+
+    <div class="report-header">
+
+      <h3 class="report-title">
+        {{ ind.nombre }}
+      </h3>
+
+      <span class="report-badge">
+        {{ ind.get_sector_display }}
+      </span>
+
     </div>
-    <p style="font-size:0.8rem;color:var(--mita-muted);margin-top:0.25rem;">Tendencia: {{ ind.tendencia }}</p>
+
+    <!-- VALORES -->
+
+    <div class="report-values">
+
+      <div class="report-current">
+        {{ ind.valor_actual }}
+        <span>{{ ind.unidad }}</span>
+      </div>
+
+      <div class="report-meta">
+        Meta proyectada:
+        <strong>
+          {{ ind.meta }} {{ ind.unidad }}
+        </strong>
+      </div>
+
+    </div>
+
+    <!-- PROGRESS -->
+
+    <div class="report-progress">
+
+      <div class="report-progress-fill"
+           style="width:{% widthratio ind.valor_actual ind.meta 100 %}%;">
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+
+    <div class="report-footer">
+
+      <div class="report-trend">
+        Tendencia:
+        {{ ind.tendencia }}
+      </div>
+
+      <div class="report-percent">
+        {% widthratio ind.valor_actual ind.meta 100 %}% completado
+      </div>
+
+    </div>
+
   </div>
+
   {% empty %}
-  <p>Ejecute seed_mita para cargar indicadores.</p>
+
+  <div class="report-empty">
+
+    <h3 style="margin-bottom:.6rem;color:#0f172a;">
+      No hay indicadores cargados
+    </h3>
+
+    <p>
+      Ejecute <strong>seed_mita</strong>
+      para cargar los indicadores del sistema.
+    </p>
+
+  </div>
+
   {% endfor %}
+
 </div>
+
 {% endblock %}

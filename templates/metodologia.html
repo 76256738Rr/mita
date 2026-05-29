@@ -3,16 +3,233 @@
 {% block page_title %}Los 5 Ejes de la Metodología MITA{% endblock %}
 
 {% block content %}
-<div class="grid grid-2">
+
+<style>
+
+/* =========================================================
+   CONTENEDOR
+========================================================= */
+
+.ejes-container{
+    margin-top:1rem;
+}
+
+/* =========================================================
+   CARD EJE
+========================================================= */
+
+.eje-card{
+    position:relative;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffffff 0%,
+            #f8fbff 100%
+        ) !important;
+
+    border:1px solid #dbeafe !important;
+
+    border-radius:24px !important;
+
+    padding:1.6rem !important;
+
+    overflow:hidden;
+
+    transition:all .28s ease;
+
+    box-shadow:
+        0 8px 25px rgba(15,23,42,.05),
+        0 2px 10px rgba(15,23,42,.03);
+}
+
+/* EFECTO SUPERIOR */
+
+.eje-card::before{
+    content:'';
+
+    position:absolute;
+
+    top:0;
+    left:0;
+
+    width:100%;
+    height:5px;
+
+    background:linear-gradient(
+        90deg,
+        #2563eb,
+        #3b82f6,
+        #60a5fa
+    );
+}
+
+/* HOVER */
+
+.eje-card:hover{
+    transform:translateY(-6px);
+
+    border-color:#93c5fd !important;
+
+    box-shadow:
+        0 18px 40px rgba(37,99,235,.10),
+        0 8px 20px rgba(15,23,42,.06);
+}
+
+/* =========================================================
+   TITULO
+========================================================= */
+
+.eje-title{
+    color:#0f172a;
+
+    font-weight:800;
+
+    line-height:1.5;
+
+    margin-bottom:1rem;
+
+    letter-spacing:-.3px;
+}
+
+/* SIGLA */
+
+.eje-sigla{
+    color:#2563eb;
+}
+
+/* =========================================================
+   DESCRIPCIÓN
+========================================================= */
+
+.eje-description{
+    color:#1e293b !important;
+
+    line-height:1.8;
+
+    margin-bottom:1rem;
+}
+
+/* =========================================================
+   PROPÓSITO
+========================================================= */
+
+.eje-purpose{
+    background:#eff6ff;
+
+    border:1px solid #bfdbfe;
+
+    border-radius:16px;
+
+    padding:1rem;
+
+    color:#0f172a !important;
+
+    line-height:1.7;
+
+    margin-bottom:1rem;
+}
+
+.eje-purpose strong{
+    color:#1d4ed8;
+}
+
+/* =========================================================
+   FUENTES
+========================================================= */
+
+.eje-sources{
+    color:#0f172a !important;
+
+    background:#f8fafc;
+
+    border-radius:14px;
+
+    padding:.85rem 1rem;
+
+    border:1px solid #e2e8f0;
+
+    line-height:1.7;
+}
+
+.eje-sources strong{
+    color:#2563eb;
+}
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.eje-empty{
+    color:#0f172a;
+
+    font-weight:600;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:900px){
+
+    .grid-2{
+        grid-template-columns:1fr;
+    }
+
+}
+
+</style>
+
+<div class="grid grid-2 ejes-container">
+
   {% for eje in ejes %}
+
   <div class="card eje-card">
-    <h3>{{ eje.sigla }} — {{ eje.nombre }}</h3>
-    <p style="font-size:0.9rem;margin-bottom:0.5rem;">{{ eje.descripcion }}</p>
-    <p style="font-size:0.85rem;color:var(--mita-muted);"><strong>Propósito:</strong> {{ eje.proposito }}</p>
-    <p style="font-size:0.8rem;margin-top:0.5rem;"><strong>Fuentes:</strong> {{ eje.fuentes|join:", " }}</p>
+
+    <h3 class="eje-title">
+
+      <span class="eje-sigla">
+        {{ eje.sigla }}
+      </span>
+
+      — {{ eje.nombre }}
+
+    </h3>
+
+    <p class="eje-description">
+      {{ eje.descripcion }}
+    </p>
+
+    <div class="eje-purpose">
+
+      <strong>
+        Propósito:
+      </strong>
+
+      {{ eje.proposito }}
+
+    </div>
+
+    <div class="eje-sources">
+
+      <strong>
+        Fuentes:
+      </strong>
+
+      {{ eje.fuentes|join:", " }}
+
+    </div>
+
   </div>
+
   {% empty %}
-  <p>Ejecute seed_mita para cargar los ejes.</p>
+
+  <p class="eje-empty">
+    Ejecute seed_mita para cargar los ejes.
+  </p>
+
   {% endfor %}
+
 </div>
+
 {% endblock %}

@@ -3,51 +3,589 @@
 {% block page_title %}Bandeja de Trabajo{% endblock %}
 
 {% block content %}
-<div class="grid grid-3" style="margin-bottom:1.5rem;">
-  <div class="card stat-card">
-    <div class="value">{{ total_tareas }}</div>
-    <div class="label">Tareas pendientes</div>
-  </div>
-  <div class="card stat-card">
-    <div class="value">{{ expedientes.count }}</div>
-    <div class="label">Expedientes activos</div>
-  </div>
-  <div class="card stat-card">
-    <a href="{% url 'expediente-nuevo' %}" class="btn btn-primary">Nuevo expediente</a>
-  </div>
-</div>
 
-<div class="grid grid-2">
-  <div class="card">
-    <h3>Mis tareas</h3>
-    {% for t in tareas %}
-    <div class="task-item {% if t.urgente %}task-urgente{% endif %}">
-      <div>
-        <strong>{{ t.titulo }}</strong>
-        <p style="font-size:0.85rem;color:var(--mita-muted);">{{ t.expediente.folio }} — Paso {{ t.paso }}</p>
-      </div>
-      <a href="{% url 'expediente-detalle' t.expediente.pk %}" class="btn btn-primary btn-sm">Abrir</a>
+<style>
+
+/* =========================================================
+   MITA — BANDEJA PREMIUM
+========================================================= */
+
+.bandeja-wrapper{
+    animation:fadeIn .5s ease;
+}
+
+/* =========================================================
+   GRID SUPERIOR
+========================================================= */
+
+.bandeja-top-grid{
+    margin-bottom:2rem;
+}
+
+.bandeja-stat-card{
+    position:relative;
+    overflow:hidden;
+
+    background:linear-gradient(145deg,#ffffff 0%,#f8fbff 100%) !important;
+
+    border:none !important;
+
+    border-radius:30px !important;
+
+    padding:2rem 1.5rem !important;
+
+    box-shadow:
+        0 15px 35px rgba(15,23,42,.06),
+        0 4px 14px rgba(37,99,235,.05) !important;
+
+    transition:all .28s ease;
+}
+
+.bandeja-stat-card::before{
+    content:'';
+    position:absolute;
+    top:0;
+    left:0;
+
+    width:100%;
+    height:6px;
+
+    background:linear-gradient(
+        90deg,
+        #2563eb,
+        #3b82f6,
+        #60a5fa
+    );
+}
+
+.bandeja-stat-card:hover{
+    transform:translateY(-6px);
+
+    box-shadow:
+        0 24px 45px rgba(15,23,42,.10),
+        0 8px 18px rgba(37,99,235,.08) !important;
+}
+
+.bandeja-stat-card .value{
+    font-size:3rem !important;
+    font-weight:900 !important;
+
+    color:#0f172a !important;
+
+    text-align:center;
+
+    letter-spacing:-2px;
+}
+
+.bandeja-stat-card .label{
+    margin-top:.6rem;
+
+    font-size:.95rem !important;
+    font-weight:700 !important;
+
+    text-transform:uppercase;
+    letter-spacing:.8px;
+
+    color:#0f172a !important;
+
+    text-align:center;
+}
+
+/* =========================================================
+   BOTÓN NUEVO
+========================================================= */
+
+.bandeja-action-card{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.bandeja-action-card .btn{
+    width:100%;
+
+    padding:1rem 1.4rem;
+
+    border:none;
+    border-radius:18px;
+
+    background:linear-gradient(
+        135deg,
+        #2563eb,
+        #1d4ed8
+    );
+
+    color:#ffffff !important;
+
+    font-weight:800;
+    font-size:.95rem;
+
+    box-shadow:
+        0 12px 24px rgba(37,99,235,.22);
+
+    transition:all .25s ease;
+}
+
+.bandeja-action-card .btn:hover{
+    transform:translateY(-3px);
+
+    box-shadow:
+        0 18px 35px rgba(37,99,235,.30);
+}
+
+/* =========================================================
+   CONTENIDO PRINCIPAL
+========================================================= */
+
+.bandeja-main-grid{
+    gap:1.8rem;
+}
+
+.bandeja-card{
+    background:linear-gradient(
+        145deg,
+        #ffffff 0%,
+        #f8fbff 100%
+    ) !important;
+
+    border:none !important;
+
+    border-radius:30px !important;
+
+    padding:1.8rem !important;
+
+    box-shadow:
+        0 15px 35px rgba(15,23,42,.06),
+        0 4px 14px rgba(37,99,235,.04) !important;
+
+    transition:all .28s ease;
+
+    position:relative;
+    overflow:hidden;
+}
+
+.bandeja-card::before{
+    content:'';
+    position:absolute;
+    top:0;
+    left:0;
+
+    width:100%;
+    height:5px;
+
+    background:linear-gradient(
+        90deg,
+        #2563eb,
+        #60a5fa
+    );
+}
+
+.bandeja-card:hover{
+    transform:translateY(-4px);
+
+    box-shadow:
+        0 24px 50px rgba(15,23,42,.10),
+        0 8px 20px rgba(37,99,235,.08) !important;
+}
+
+/* =========================================================
+   TITULOS
+========================================================= */
+
+.bandeja-title{
+    font-size:1.4rem;
+    font-weight:900;
+
+    color:#0f172a !important;
+
+    margin-bottom:1.4rem;
+
+    letter-spacing:-.5px;
+}
+
+/* =========================================================
+   TAREAS
+========================================================= */
+
+.task-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:1rem;
+
+    padding:1.2rem;
+
+    margin-bottom:1rem;
+
+    border-radius:22px;
+
+    background:#ffffff;
+
+    border:1px solid #e2e8f0;
+
+    transition:all .25s ease;
+
+    box-shadow:
+        0 4px 12px rgba(15,23,42,.04);
+}
+
+.task-item:hover{
+    transform:translateY(-3px);
+
+    border-color:#93c5fd;
+
+    box-shadow:
+        0 18px 30px rgba(37,99,235,.10);
+}
+
+.task-item strong{
+    color:#0f172a !important;
+
+    font-size:1rem;
+    font-weight:800;
+}
+
+.task-item p{
+    margin-top:.4rem;
+
+    color:#334155 !important;
+
+    font-size:.88rem !important;
+}
+
+.task-urgente{
+    border-left:6px solid #ef4444 !important;
+
+    background:linear-gradient(
+        135deg,
+        #fff5f5 0%,
+        #ffffff 100%
+    );
+}
+
+/* =========================================================
+   BOTONES
+========================================================= */
+
+.task-item .btn{
+    border:none;
+
+    border-radius:14px;
+
+    padding:.8rem 1.1rem;
+
+    background:linear-gradient(
+        135deg,
+        #2563eb,
+        #1d4ed8
+    );
+
+    color:#ffffff !important;
+
+    font-weight:700;
+
+    box-shadow:
+        0 8px 18px rgba(37,99,235,.18);
+
+    transition:all .25s ease;
+}
+
+.task-item .btn:hover{
+    transform:translateY(-2px);
+
+    box-shadow:
+        0 14px 28px rgba(37,99,235,.28);
+}
+
+/* =========================================================
+   TABLA
+========================================================= */
+
+.bandeja-table{
+    width:100%;
+
+    border-collapse:separate;
+    border-spacing:0 1rem;
+}
+
+.bandeja-table thead th{
+    font-size:.85rem;
+    font-weight:800;
+
+    text-transform:uppercase;
+    letter-spacing:.8px;
+
+    color:#0f172a !important;
+
+    padding-bottom:.8rem;
+
+    text-align:left;
+}
+
+.bandeja-table tbody tr{
+    background:#ffffff;
+
+    transition:all .22s ease;
+
+    box-shadow:
+        0 4px 12px rgba(15,23,42,.04);
+}
+
+.bandeja-table tbody tr:hover{
+    transform:scale(1.01);
+
+    box-shadow:
+        0 12px 24px rgba(37,99,235,.08);
+}
+
+.bandeja-table tbody td{
+    padding:1rem;
+
+    color:#0f172a !important;
+
+    font-size:.92rem;
+
+    border-top:1px solid #e2e8f0;
+    border-bottom:1px solid #e2e8f0;
+}
+
+.bandeja-table tbody td:first-child{
+    border-left:1px solid #e2e8f0;
+    border-radius:16px 0 0 16px;
+}
+
+.bandeja-table tbody td:last-child{
+    border-right:1px solid #e2e8f0;
+    border-radius:0 16px 16px 0;
+}
+
+.bandeja-table a{
+    color:#2563eb !important;
+    font-weight:700;
+    text-decoration:none;
+}
+
+/* =========================================================
+   BADGES
+========================================================= */
+
+.badge-info{
+    background:#dbeafe !important;
+
+    color:#1d4ed8 !important;
+
+    border:none !important;
+
+    padding:.45rem .8rem;
+
+    border-radius:999px;
+
+    font-size:.72rem;
+    font-weight:800;
+}
+
+/* =========================================================
+   VACÍO
+========================================================= */
+
+.empty-text{
+    color:#334155 !important;
+
+    font-size:.95rem;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:950px){
+
+    .grid-3,
+    .grid-2{
+        grid-template-columns:1fr !important;
+    }
+
+    .task-item{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .task-item .btn{
+        width:100%;
+    }
+
+    .bandeja-table{
+        display:block;
+        overflow-x:auto;
+    }
+
+}
+
+/* =========================================================
+   ANIMACIÓN
+========================================================= */
+
+@keyframes fadeIn{
+    from{
+        opacity:0;
+        transform:translateY(15px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+</style>
+
+<div class="bandeja-wrapper">
+
+    <!-- MÉTRICAS -->
+
+    <div class="grid grid-3 bandeja-top-grid">
+
+        <div class="card stat-card bandeja-stat-card">
+
+            <div class="value">
+                {{ total_tareas }}
+            </div>
+
+            <div class="label">
+                Tareas pendientes
+            </div>
+
+        </div>
+
+        <div class="card stat-card bandeja-stat-card">
+
+            <div class="value">
+                {{ expedientes.count }}
+            </div>
+
+            <div class="label">
+                Expedientes activos
+            </div>
+
+        </div>
+
+        <div class="card stat-card bandeja-stat-card bandeja-action-card">
+
+            <a href="{% url 'expediente-nuevo' %}"
+               class="btn btn-primary">
+
+                Nuevo expediente
+
+            </a>
+
+        </div>
+
     </div>
-    {% empty %}
-    <p style="color:var(--mita-muted);">No hay tareas pendientes.</p>
-    {% endfor %}
-  </div>
 
-  <div class="card">
-    <h3>Expedientes recientes</h3>
-    <table>
-      <thead><tr><th>Folio</th><th>Título</th><th>Paso</th><th>Estado</th></tr></thead>
-      <tbody>
-        {% for e in expedientes %}
-        <tr>
-          <td><a href="{% url 'expediente-detalle' e.pk %}">{{ e.folio }}</a></td>
-          <td>{{ e.titulo|truncatechars:40 }}</td>
-          <td>{{ e.paso_actual }}/7</td>
-          <td><span class="badge badge-info">{{ e.get_estado_display }}</span></td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+    <!-- CONTENIDO -->
+
+    <div class="grid grid-2 bandeja-main-grid">
+
+        <!-- TAREAS -->
+
+        <div class="card bandeja-card">
+
+            <h3 class="bandeja-title">
+                Mis tareas
+            </h3>
+
+            {% for t in tareas %}
+
+            <div class="task-item {% if t.urgente %}task-urgente{% endif %}">
+
+                <div>
+
+                    <strong>
+                        {{ t.titulo }}
+                    </strong>
+
+                    <p>
+                        {{ t.expediente.folio }}
+                        — Paso {{ t.paso }}
+                    </p>
+
+                </div>
+
+                <a href="{% url 'expediente-detalle' t.expediente.pk %}"
+                   class="btn btn-primary btn-sm">
+
+                    Abrir
+
+                </a>
+
+            </div>
+
+            {% empty %}
+
+            <p class="empty-text">
+                No hay tareas pendientes.
+            </p>
+
+            {% endfor %}
+
+        </div>
+
+        <!-- EXPEDIENTES -->
+
+        <div class="card bandeja-card">
+
+            <h3 class="bandeja-title">
+                Expedientes recientes
+            </h3>
+
+            <table class="bandeja-table">
+
+                <thead>
+                    <tr>
+                        <th>Folio</th>
+                        <th>Título</th>
+                        <th>Paso</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for e in expedientes %}
+
+                    <tr>
+
+                        <td>
+                            <a href="{% url 'expediente-detalle' e.pk %}">
+                                {{ e.folio }}
+                            </a>
+                        </td>
+
+                        <td>
+                            {{ e.titulo|truncatechars:40 }}
+                        </td>
+
+                        <td>
+                            {{ e.paso_actual }}/7
+                        </td>
+
+                        <td>
+                            <span class="badge badge-info">
+                                {{ e.get_estado_display }}
+                            </span>
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
 </div>
+
 {% endblock %}
