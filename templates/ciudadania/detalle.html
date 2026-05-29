@@ -132,7 +132,15 @@
   const ubicaciones = {{ ubicaciones_json|safe }};
   const ejeSlug = '{{ reporte.eje }}';
   const centroSeleccionado = '{{ centro_salud_slug|default:"" }}';
-  const iconos = { salud:'#3182ce', educacion:'#805ad5', empleo:'#d69e2e', seguridad:'#2c5282', economia:'#276749', corrupcion:'#c53030' };
+  const iconos = {
+  salud: '#3182ce',
+  educacion: '#805ad5',
+  empleo: '#d69e2e',
+  seguridad: '#2c5282',
+  economia: '#276749',
+  corrupcion: '#c53030',
+  agua: '#0891b2'
+};
   const map = L.map('mapa-ciudadania').setView([19.35, -99.5], 9);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM — Edomex' }).addTo(map);
   const ul = document.getElementById('lista-ubicaciones');
