@@ -1,120 +1,179 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Motor Analógico — MITA{% endblock %}
-{% block page_title %}Motor de Analogía (RF-06){% endblock %}
+{% block page_title %}Motor Analógico MITA (RF-06){% endblock %}
 
 {% block content %}
-<p style="margin-bottom:1rem;color:var(--mita-muted);">
-  Algoritmos propietarios que evalúan coherencia, legalidad, viabilidad, impacto y equidad.
-  Detecta riesgos sesgado, radical y divagante.
-</p>
 
-<div class="grid grid-2">
-  <div class="card">
-    <h3>Evaluar Propuesta</h3>
-    <form method="post">
+<div class="analogia-hero">
+  <img src="{% static 'img/analogia/motor-analogico.svg' %}" alt="" class="analogia-hero-icon">
+  <div>
+    <h2>Evaluación analógica de propuestas públicas</h2>
+    <p>
+      Algoritmos propietarios que miden <strong>legalidad</strong>, <strong>viabilidad</strong>,
+      <strong>pertinencia</strong>, <strong>coherencia sistémica</strong> y <strong>adaptación cultural</strong>.
+      Detecta riesgos <em>sesgado</em>, <em>radical</em> y <em>divagante</em>.
+    </p>
+    {% if expediente %}
+    <p class="analogia-exp-badge">
+      📁 Vinculado al expediente <strong>{{ expediente.folio }}</strong> — Paso 4 del proceso operativo
+      <a href="{% url 'expediente-detalle' expediente.pk %}" class="btn btn-sm btn-primary" style="margin-left:0.5rem;">Ir al expediente</a>
+    </p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="analogia-criterios-grid">
+  <div class="analogia-criterio-mini"><img src="{% static 'img/analogia/criterio-legalidad.svg' %}" alt=""><span>Legalidad</span></div>
+  <div class="analogia-criterio-mini"><img src="{% static 'img/analogia/criterio-viabilidad.svg' %}" alt=""><span>Viabilidad</span></div>
+  <div class="analogia-criterio-mini"><img src="{% static 'img/analogia/criterio-pertinencia.svg' %}" alt=""><span>Pertinencia</span></div>
+  <div class="analogia-criterio-mini"><img src="{% static 'img/analogia/criterio-coherencia.svg' %}" alt=""><span>Coherencia</span></div>
+  <div class="analogia-criterio-mini"><img src="{% static 'img/analogia/criterio-cultural.svg' %}" alt=""><span>Cultural</span></div>
+</div>
+
+<div class="analogia-layout">
+  <div class="card analogia-form-card">
+    <div class="analogia-form-header">
+      <h3>Evaluar propuesta</h3>
+      <a href="?demo=1{% if expediente %}&expediente={{ expediente.pk }}{% endif %}" class="btn btn-sm">Cargar demo diabetes</a>
+    </div>
+
+    <form method="post" id="form-analogia">
       {% csrf_token %}
       <div class="form-group">
-        <label>Título de la propuesta</label>
-        <input type="text" name="titulo" required placeholder="Nombre de la iniciativa pública">
+        <label>Título de la propuesta *</label>
+        <input type="text" name="titulo" required placeholder="Nombre de la iniciativa pública"
+               value="{{ propuesta.titulo|default:'' }}">
       </div>
       <div class="form-group">
         <label>Descripción</label>
-        <textarea name="descripcion" rows="3" placeholder="Descripción de la propuesta"></textarea>
+        <textarea name="descripcion" rows="3" placeholder="Objetivo, alcance e impacto esperado">{{ propuesta.descripcion|default:'' }}</textarea>
       </div>
       <div class="form-group">
         <label>Solicitante / Dependencia</label>
-        <input type="text" name="solicitante" placeholder="Dependencia del Gobierno del Estado de México">
+        <input type="text" name="solicitante" placeholder="Dependencia del Gobierno del Estado de México"
+               value="{{ propuesta.solicitante|default:'' }}">
       </div>
       <div class="form-group">
         <label>Presupuesto (MXN)</label>
-        <input type="number" name="presupuesto" min="0" step="1000" value="0">
+        <input type="number" name="presupuesto" min="0" step="1000" value="{{ propuesta.presupuesto|default:0 }}">
       </div>
 
-      <h4 style="margin:1rem 0 0.5rem;font-size:0.9rem;">Legalidad</h4>
+      <h4 class="analogia-section-title"><img src="{% static 'img/analogia/criterio-legalidad.svg' %}" alt=""> Legalidad</h4>
       <div class="checkbox-grid">
-        <label><input type="checkbox" name="marco_legal"> Marco legal definido</label>
-        <label><input type="checkbox" name="derechos_humanos"> Derechos humanos</label>
-        <label><input type="checkbox" name="normativa_aplicable"> Normativa aplicable</label>
+        <label><input type="checkbox" name="marco_legal" {% if propuesta.marco_legal %}checked{% endif %}> Marco legal definido</label>
+        <label><input type="checkbox" name="derechos_humanos" {% if propuesta.derechos_humanos %}checked{% endif %}> Derechos humanos</label>
+        <label><input type="checkbox" name="normativa_aplicable" {% if propuesta.normativa_aplicable %}checked{% endif %}> Normativa aplicable</label>
       </div>
 
-      <h4 style="margin:1rem 0 0.5rem;font-size:0.9rem;">Viabilidad</h4>
+      <h4 class="analogia-section-title"><img src="{% static 'img/analogia/criterio-viabilidad.svg' %}" alt=""> Viabilidad</h4>
       <div class="checkbox-grid">
-        <label><input type="checkbox" name="recursos_tecnicos"> Recursos técnicos</label>
-        <label><input type="checkbox" name="infraestructura"> Infraestructura</label>
-        <label><input type="checkbox" name="plazo_ejecucion"> Plazo de ejecución</label>
-        <label><input type="checkbox" name="retorno_inversion"> Retorno de inversión</label>
-        <label><input type="checkbox" name="sostenibilidad"> Sostenibilidad</label>
+        <label><input type="checkbox" name="recursos_tecnicos" {% if propuesta.recursos_tecnicos %}checked{% endif %}> Recursos técnicos</label>
+        <label><input type="checkbox" name="infraestructura" {% if propuesta.infraestructura %}checked{% endif %}> Infraestructura</label>
+        <label><input type="checkbox" name="plazo_ejecucion" {% if propuesta.plazo_ejecucion %}checked{% endif %}> Plazo de ejecución</label>
+        <label><input type="checkbox" name="retorno_inversion" {% if propuesta.retorno_inversion %}checked{% endif %}> Retorno de inversión</label>
+        <label><input type="checkbox" name="sostenibilidad" {% if propuesta.sostenibilidad %}checked{% endif %}> Sostenibilidad</label>
       </div>
 
-      <h4 style="margin:1rem 0 0.5rem;font-size:0.9rem;">Pertinencia e Integración</h4>
+      <h4 class="analogia-section-title"><img src="{% static 'img/analogia/criterio-pertinencia.svg' %}" alt=""> Pertinencia e integración</h4>
       <div class="checkbox-grid">
-        <label><input type="checkbox" name="beneficiarios"> Beneficiarios identificados</label>
-        <label><input type="checkbox" name="necesidad_identificada"> Necesidad validada</label>
-        <label><input type="checkbox" name="impacto_esperado"> Impacto esperado</label>
-        <label><input type="checkbox" name="enfoque_integral"> Enfoque integral</label>
-        <label><input type="checkbox" name="adaptacion_cultural"> Adaptación cultural</label>
-        <label><input type="checkbox" name="interculturalidad"> Interculturalidad</label>
+        <label><input type="checkbox" name="beneficiarios" {% if propuesta.beneficiarios %}checked{% endif %}> Beneficiarios identificados</label>
+        <label><input type="checkbox" name="necesidad_identificada" {% if propuesta.necesidad_identificada %}checked{% endif %}> Necesidad validada</label>
+        <label><input type="checkbox" name="impacto_esperado" {% if propuesta.impacto_esperado %}checked{% endif %}> Impacto esperado</label>
+        <label><input type="checkbox" name="enfoque_integral" {% if propuesta.enfoque_integral %}checked{% endif %}> Enfoque integral</label>
+        <label><input type="checkbox" name="adaptacion_cultural" {% if propuesta.adaptacion_cultural %}checked{% endif %}> Adaptación cultural</label>
+        <label><input type="checkbox" name="interculturalidad" {% if propuesta.interculturalidad %}checked{% endif %}> Interculturalidad</label>
       </div>
 
-      <h4 style="margin:1rem 0 0.5rem;font-size:0.9rem;">Ejes de acción (1-6)</h4>
+      <h4 class="analogia-section-title"><img src="{% static 'img/analogia/criterio-coherencia.svg' %}" alt=""> Ejes de acción MITA (1-6)</h4>
       <div class="checkbox-grid">
         {% for i in "123456" %}
-        <label><input type="checkbox" name="ejes_accion" value="{{ i }}"> Eje {{ i }}</label>
+        <label><input type="checkbox" name="ejes_accion" value="{{ i }}"
+          {% if propuesta.ejes_str and i in propuesta.ejes_str %}checked{% endif %}>
+          Eje {{ i }}</label>
         {% endfor %}
       </div>
 
-      <div style="margin-top:1.5rem;display:flex;gap:0.75rem;">
+      <div class="analogia-form-actions">
         <button type="submit" class="btn btn-primary">Evaluar analogía</button>
         <button type="submit" name="generar_dictamen" value="1" class="btn btn-success">Generar Dictamen MITA</button>
       </div>
     </form>
   </div>
 
-  <div>
+  <div class="analogia-resultados">
     {% if resultado %}
-    <div class="card" style="margin-bottom:1rem;">
-      <h3>Resultado de Evaluación</h3>
-      <p style="font-size:1.5rem;font-weight:700;color:var(--mita-secondary);">
-        {{ resultado.puntuacion_total }}/100
-      </p>
-      <span class="badge {% if resultado.aprobado %}badge-success{% else %}badge-warning{% endif %}">
-        {{ resultado.nivel }}
-      </span>
-      {% if resultado.fronesis %}
-      <span class="badge badge-success" style="margin-left:0.5rem;">Fronesis equilibrada</span>
-      {% endif %}
-
-      <h4 style="margin-top:1rem;font-size:0.9rem;">Criterios</h4>
-      {% for nombre, valor in resultado.criterios.items %}
-      <div style="margin-top:0.5rem;">
-        <div style="display:flex;justify-content:space-between;font-size:0.85rem;">
-          <span>{{ nombre|title }}</span>
-          <span>{{ valor|floatformat:0 }}%</span>
-        </div>
-        <div class="progress-bar"><div class="fill" style="width:{{ valor }}%"></div></div>
+    <div class="card analogia-score-card">
+      <h3>Resultado de evaluación</h3>
+      <div class="analogia-score-ring" data-score="{{ resultado.puntuacion_total|floatformat:0 }}">
+        <svg viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="#edf2f7" stroke-width="10"/>
+          <circle cx="60" cy="60" r="52" fill="none" stroke="{% if resultado.aprobado %}#48BB78{% else %}#D69E2E{% endif %}"
+                  stroke-width="10" stroke-linecap="round"
+                  stroke-dasharray="327" stroke-dashoffset="{{ resultado.puntuacion_total|floatformat:0 }}"
+                  transform="rotate(-90 60 60)" class="analogia-score-arc"/>
+        </svg>
+        <div class="analogia-score-value">{{ resultado.puntuacion_total|floatformat:0 }}<small>/100</small></div>
       </div>
-      {% endfor %}
+      <p class="analogia-nivel">{{ resultado.nivel }}</p>
+      <div class="analogia-badges">
+        <span class="badge {% if resultado.aprobado %}badge-success{% else %}badge-warning{% endif %}">
+          {% if resultado.aprobado %}Aprobado{% else %}Requiere ajustes{% endif %}
+        </span>
+        {% if resultado.fronesis %}
+        <span class="badge badge-success">Fronesis equilibrada</span>
+        {% endif %}
+      </div>
+    </div>
 
-      {% if resultado.riesgos %}
-      <h4 style="margin-top:1rem;font-size:0.9rem;">Riesgos Detectados</h4>
-      {% for riesgo in resultado.riesgos %}
-      <p style="font-size:0.85rem;"><span class="badge badge-danger">{{ riesgo.tipo }}</span> {{ riesgo.descripcion }}</p>
-      {% endfor %}
-      {% endif %}
+    <div class="card">
+      <h3>Criterios evaluados</h3>
+      <div class="analogia-criterios-result">
+        {% for c in criterios_visual %}
+        <div class="analogia-criterio-row">
+          <img src="{% static c.icono %}" alt="" class="analogia-criterio-icon">
+          <div class="analogia-criterio-bar-wrap">
+            <div class="analogia-criterio-label">
+              <span>{{ c.nombre }}</span>
+              <strong>{{ c.valor|floatformat:0 }}%</strong>
+            </div>
+            <div class="progress-bar"><div class="fill" style="width:{{ c.valor }}%"></div></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
 
-      {% if resultado.recomendaciones %}
-      <h4 style="margin-top:1rem;font-size:0.9rem;">Recomendaciones</h4>
-      <ul style="padding-left:1.25rem;font-size:0.85rem;">
+    {% if riesgos_visual %}
+    <div class="card analogia-riesgos-card">
+      <h3>Riesgos detectados</h3>
+      <div class="analogia-riesgos-grid">
+        {% for riesgo in riesgos_visual %}
+        <div class="analogia-riesgo-item">
+          <img src="{% static riesgo.icono %}" alt="">
+          <div>
+            <span class="badge badge-danger">{{ riesgo.tipo|title }}</span>
+            <p>{{ riesgo.descripcion }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if resultado.recomendaciones %}
+    <div class="card">
+      <h3>Recomendaciones</h3>
+      <ul class="analogia-recomendaciones">
         {% for rec in resultado.recomendaciones %}
         <li>{{ rec }}</li>
         {% endfor %}
       </ul>
-      {% endif %}
     </div>
     {% endif %}
 
     {% if dictamen %}
-    <div class="card">
+    <div class="card analogia-dictamen-card">
       <h3>Dictamen de Validación MITA</h3>
       <p><strong>Folio:</strong> {{ dictamen.folio }}</p>
       <p><strong>Resultado:</strong>
@@ -123,11 +182,38 @@
         </span>
       </p>
       <p style="font-size:0.85rem;margin-top:0.5rem;">{{ dictamen.validez }}</p>
-      <p style="font-size:0.8rem;color:var(--mita-muted);margin-top:0.5rem;">
-        Use la API POST /api/mita/dictamen/ para persistir y generar PDF.
-      </p>
+      {% if dictamen_obj %}
+      <a href="/api/mita/dictamen/{{ dictamen_obj.pk }}/pdf/" class="btn btn-primary btn-sm" target="_blank">Descargar PDF</a>
+      <a href="{% url 'dictamenes' %}" class="btn btn-sm" style="margin-left:0.35rem;">Ver en dictámenes</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="card analogia-empty">
+      <img src="{% static 'img/analogia/motor-analogico.svg' %}" alt="">
+      <h3>Sin evaluación aún</h3>
+      <p>Complete el formulario y pulse <strong>Evaluar analogía</strong> para ver el resultado gráfico.</p>
+      <p style="font-size:0.85rem;color:var(--mita-muted);">Tip: use <strong>Cargar demo diabetes</strong> para probar con el proyecto EDOMEX.</p>
     </div>
     {% endif %}
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{% if resultado %}
+<script>
+(function(){
+  const ring = document.querySelector('.analogia-score-ring');
+  if (!ring) return;
+  const score = parseFloat(ring.dataset.score) || 0;
+  const arc = ring.querySelector('.analogia-score-arc');
+  if (arc) {
+    const circ = 327;
+    arc.style.strokeDashoffset = circ - (circ * score / 100);
+  }
+})();
+</script>
+{% endif %}
 {% endblock %}

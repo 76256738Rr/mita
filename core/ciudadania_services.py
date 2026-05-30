@@ -1,12 +1,247 @@
 """Servicios para reportes ciudadanos y asistente IA simulado."""
 
 import uuid
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from django.utils import timezone
 
 from core.ciudadania_config import EJES_CIUDADANIA, get_eje_config
 from core.models import MensajeReporteCiudadano, ReporteCiudadano
+
+
+PERSONAS_ATENCION = {
+    'mita': {
+        'nombre': 'Lic. Patricia Morales',
+        'cargo': 'Gestora de ventanilla ciudadana',
+        'correo': 'ventanilla@mita.edomex.gob.mx',
+    },
+    'sedesa': {
+        'nombre': 'Lic. María Elena Santos',
+        'cargo': 'Enlace ciudadano — surtimiento de medicamentos',
+        'correo': 'enlace.ciudadano@sedesa.edomex.gob.mx',
+    },
+    'imss_bienestar': {
+        'nombre': 'Dr. Jorge Ramírez López',
+        'cargo': 'Coordinador de afiliación IMSS-Bienestar',
+        'correo': 'jorge.ramirez@imssbienestar.gob.mx',
+    },
+    'sep_edomex': {
+        'nombre': 'Prof. Carmen Delgado',
+        'cargo': 'Enlace escolar — SEIEM',
+        'correo': 'carmen.delgado@seiem.edomex.gob.mx',
+    },
+    'cecyctem': {
+        'nombre': 'Ing. Luis Hernández',
+        'cargo': 'Orientador educativo CECyTEM',
+        'correo': 'l.hernandez@cecytem.edomex.gob.mx',
+    },
+    'stps': {
+        'nombre': 'Lic. Ana Ruiz García',
+        'cargo': 'Asesora de empleo — Secretaría del Trabajo',
+        'correo': 'ana.ruiz@trabajo.edomex.gob.mx',
+    },
+    'fiscalia': {
+        'nombre': 'Lic. Roberto Méndez',
+        'cargo': 'Enlace de denuncia ciudadana',
+        'correo': 'roberto.mendez@fiscalia.edomex.gob.mx',
+    },
+    'contraloria': {
+        'nombre': 'Lic. Sandra Ortiz',
+        'cargo': 'Investigadora de denuncias anticorrupción',
+        'correo': 'sandra.ortiz@contraloria.edomex.gob.mx',
+    },
+    'economia': {
+        'nombre': 'C.P. Miguel Torres',
+        'cargo': 'Enlace de apoyo económico',
+        'correo': 'm.torres@economia.edomex.gob.mx',
+    },
+    'seguridad': {
+        'nombre': 'Cmdte. Javier Núñez',
+        'cargo': 'Coordinador de atención ciudadana — SSP',
+        'correo': 'j.nunez@seguridad.edomex.gob.mx',
+    },
+}
+
+
+def _iso(dt):
+    if not dt:
+        return None
+    if isinstance(dt, str):
+        return dt
+    return dt.isoformat()
+
+
+def _fmt_fecha(iso_val):
+    if not iso_val:
+        return '—'
+    try:
+        dt = datetime.fromisoformat(iso_val.replace('Z', '+00:00'))
+        if timezone.is_aware(dt):
+            dt = timezone.localtime(dt)
+        return dt.strftime('%d/%m/%Y %H:%M')
+    except (ValueError, TypeError):
+        return iso_val
+
+
+def persona_para_dependencia(dep):
+    clave = dep.get('clave', 'mita')
+    base = PERSONAS_ATENCION.get(clave, PERSONAS_ATENCION['mita']).copy()
+    base['dependencia'] = dep['nombre']
+    base['clave'] = clave
+    return base
+
+
+def construir_ruta_tramite(eje_slug, dependencias, fecha_base=None):
+    """Ruta de atención con dependencias, responsables y marcas de tiempo."""
+    eje = get_eje_config(eje_slug)
+    base = fecha_base or timezone.now()
+    pasos = []
+
+    def add_paso(orden, nombre, dependencia, clave, estado, descripcion, delta_recibido, delta_inicio=None, delta_fin=None):
+        recibido = base + timedelta(minutes=delta_recibido)
+        inicio = base + timedelta(minutes=delta_inicio) if delta_inicio is not None else None
+        fin = base + timedelta(minutes=delta_fin) if delta_fin is not None else None
+        persona = persona_para_dependencia({'clave': clave, 'nombre': dependencia})
+        pasos.append({
+            'orden': orden,
+            'nombre': nombre,
+            'dependencia': dependencia,
+            'clave': clave,
+            'estado': estado,
+            'descripcion': descripcion,
+            'responsable': persona,
+            'fecha_recibido': _iso(recibido),
+            'fecha_inicio_atencion': _iso(inicio) if estado != 'pendiente' else None,
+            'fecha_fin': _iso(fin) if estado == 'completado' else None,
+            'fecha_recibido_fmt': _fmt_fecha(_iso(recibido)),
+            'fecha_inicio_atencion_fmt': _fmt_fecha(_iso(inicio)) if inicio else '—',
+            'fecha_fin_fmt': _fmt_fecha(_iso(fin)) if fin else '—',
+        })
+
+    add_paso(
+        1, 'Recepción en ventanilla', 'Ventanilla Ciudadana MITA', 'mita', 'completado',
+        'Su reporte fue recibido, validado y registrado con número de control.',
+        0, 5, 15,
+    )
+    add_paso(
+        2, 'Clasificación por eje', f"Coordinación Eje {eje.get('nombre', eje_slug)}", 'mita', 'completado',
+        'El sistema clasificó su problemática y determinó las dependencias competentes.',
+        15, 20, 30,
+    )
+
+    for i, dep in enumerate(dependencias):
+        orden = i + 3
+        es_primera = i == 0
+        estado = 'activo' if es_primera else 'pendiente'
+        delta_rec = 30 + (i * 60)
+        delta_ini = delta_rec + 30 if es_primera else None
+        add_paso(
+            orden,
+            'Atención directa' if es_primera else 'Coordinación interinstitucional',
+            dep['nombre'],
+            dep.get('clave', 'mita'),
+            estado,
+            dep.get('rol', 'Atención institucional al ciudadano'),
+            delta_rec,
+            delta_ini,
+            delta_rec + 45 if estado == 'completado' else None,
+        )
+
+    pasos.append({
+        'orden': len(pasos) + 1,
+        'nombre': 'Respuesta oficial al ciudadano',
+        'dependencia': dependencias[0]['nombre'] if dependencias else 'Coordinación MITA',
+        'clave': dependencias[0].get('clave', 'mita') if dependencias else 'mita',
+        'estado': 'pendiente',
+        'descripcion': 'Se emitirá resolución, acción concreta o informe de no procedencia.',
+        'responsable': persona_para_dependencia(dependencias[0] if dependencias else {'clave': 'mita', 'nombre': 'Coordinación MITA'}),
+        'fecha_recibido': None,
+        'fecha_inicio_atencion': None,
+        'fecha_fin': None,
+        'fecha_recibido_fmt': '—',
+        'fecha_inicio_atencion_fmt': '—',
+        'fecha_fin_fmt': '—',
+    })
+    return pasos
+
+
+def obtener_responsable_activo(ruta_tramite):
+    for paso in ruta_tramite or []:
+        if paso.get('estado') == 'activo':
+            return paso.get('responsable', {})
+    return {}
+
+
+def marcar_inicio_atencion(reporte):
+    """Registra cuándo la dependencia activa empezó a atender el caso."""
+    ruta = list(reporte.ruta_tramite or [])
+    ahora = timezone.now()
+    cambio = False
+    for paso in ruta:
+        if paso.get('estado') == 'activo' and not paso.get('fecha_inicio_atencion'):
+            paso['fecha_inicio_atencion'] = _iso(ahora)
+            paso['fecha_inicio_atencion_fmt'] = _fmt_fecha(_iso(ahora))
+            reporte.responsable_atencion = paso.get('responsable', {})
+            cambio = True
+            break
+    if cambio:
+        reporte.ruta_tramite = ruta
+        reporte.save(update_fields=['ruta_tramite', 'responsable_atencion', 'actualizado_en'])
+    return reporte
+
+
+def enriquecer_ruta_demo(reporte, dias_atras=3):
+    """Ajusta fechas de la ruta demo para simular seguimiento en curso."""
+    base = timezone.now() - timedelta(days=dias_atras)
+    deps = reporte.dependencias_involucradas or get_eje_config(reporte.eje).get('dependencias', [])
+    ruta = construir_ruta_tramite(reporte.eje, deps, fecha_base=base)
+    reporte.ruta_tramite = ruta
+    reporte.responsable_atencion = obtener_responsable_activo(ruta)
+    reporte.estado = ReporteCiudadano.Estado.EN_ATENCION
+    reporte.save(update_fields=['ruta_tramite', 'responsable_atencion', 'estado', 'actualizado_en'])
+    return reporte
+
+
+WORKFLOW_ICONOS = {
+    'recepcion': 'img/ciudadania/workflow/paso-recepcion.svg',
+    'clasificacion': 'img/ciudadania/workflow/paso-clasificacion.svg',
+    'atencion': 'img/ciudadania/workflow/paso-atencion.svg',
+    'coordinacion': 'img/ciudadania/workflow/paso-coordinacion.svg',
+    'respuesta': 'img/ciudadania/workflow/paso-respuesta.svg',
+}
+
+
+def tipo_icono_paso(paso):
+    """Determina el ícono gráfico según el tipo de paso en la ruta."""
+    nombre = (paso.get('nombre') or '').lower()
+    if 'recepción' in nombre or 'recepcion' in nombre:
+        return 'recepcion'
+    if 'clasificación' in nombre or 'clasificacion' in nombre:
+        return 'clasificacion'
+    if 'respuesta' in nombre:
+        return 'respuesta'
+    if 'coordinación' in nombre or 'coordinacion' in nombre:
+        return 'coordinacion'
+    if 'atención' in nombre or 'atencion' in nombre or 'turnado' in nombre:
+        return 'atencion'
+    return 'atencion'
+
+
+def enriquecer_ruta_grafica(ruta_tramite):
+    """Añade metadatos visuales a cada paso para la vista gráfica."""
+    resultado = []
+    for paso in ruta_tramite or []:
+        copia = dict(paso)
+        tipo = tipo_icono_paso(paso)
+        copia['icono_tipo'] = tipo
+        copia['icono'] = WORKFLOW_ICONOS.get(tipo, WORKFLOW_ICONOS['atencion'])
+        copia['estado_label'] = {
+            'completado': 'Completado',
+            'activo': 'En atención',
+            'pendiente': 'Pendiente',
+        }.get(paso.get('estado'), paso.get('estado', ''))
+        resultado.append(copia)
+    return resultado
 
 
 def generar_numero_control():
@@ -26,43 +261,6 @@ def generar_numero_control():
     else:
         seq = 1
     return f'{prefix}{seq:05d}'
-
-
-def construir_ruta_tramite(eje_slug, dependencias):
-    """Ruta de turnado simulada por dependencias involucradas."""
-    eje = get_eje_config(eje_slug)
-    pasos = [
-        {
-            'orden': 1,
-            'nombre': 'Recepción MITA',
-            'dependencia': 'Ventanilla Ciudadana MITA',
-            'estado': 'completado',
-            'descripcion': 'Su reporte fue recibido y validado en la plataforma.',
-        },
-        {
-            'orden': 2,
-            'nombre': 'Clasificación por eje',
-            'dependencia': f"Eje {eje.get('nombre', eje_slug)}",
-            'estado': 'completado',
-            'descripcion': 'El sistema clasificó su problemática según el eje seleccionado.',
-        },
-    ]
-    for i, dep in enumerate(dependencias, start=3):
-        pasos.append({
-            'orden': i,
-            'nombre': 'Turnado' if i == 3 else 'Coordinación',
-            'dependencia': dep['nombre'],
-            'estado': 'activo' if i == 3 else 'pendiente',
-            'descripcion': dep.get('rol', 'Atención institucional'),
-        })
-    pasos.append({
-        'orden': len(pasos) + 1,
-        'nombre': 'Respuesta oficial',
-        'dependencia': dependencias[0]['nombre'] if dependencias else 'MITA',
-        'estado': 'pendiente',
-        'descripcion': 'La dependencia emitirá resolución o informará plazo de atención.',
-    })
-    return pasos
 
 
 def estimar_fecha_atencion(eje_slug, urgencia=None):
@@ -366,51 +564,74 @@ def respuesta_asistente_ia(mensaje, eje_slug=None, datos_parciales=None, fase='e
     )
 
 
-def respuesta_dependencia_simulada(reporte, mensaje_ciudadano):
-    """Simula respuesta de la dependencia turnada vía chat."""
-    msg = mensaje_ciudadano.lower()
-    dep = reporte.dependencia_principal
+def respuesta_responsable_simulada(reporte, mensaje_ciudadano):
+    """Simula respuesta del responsable de atención al ciudadano."""
+    resp = reporte.responsable_atencion or reporte.responsable_actual or {}
+    nombre = resp.get('nombre', 'Enlace ciudadano')
+    cargo = resp.get('cargo', '')
+    dep = resp.get('dependencia', reporte.dependencia_principal)
     fecha = reporte.fecha_estimada_atencion
     fecha_txt = fecha.strftime('%d/%m/%Y') if fecha else 'próximos días'
+    paso = reporte.paso_activo or {}
+    inicio = paso.get('fecha_inicio_atencion_fmt', '—')
+    recibido = paso.get('fecha_recibido_fmt', '—')
+    msg = mensaje_ciudadano.lower()
 
     if reporte.estado == ReporteCiudadano.Estado.NO_PROCEDE:
         return (
-            f'{dep}: Lamentamos informarle que su reporte **{reporte.numero_control}** '
-            f'no procede. Motivo: {reporte.motivo_no_procede or "No cumple requisitos de la normativa aplicable."} '
-            'Puede presentar documentación adicional o acudir presencialmente si considera que hubo un error.'
+            f'Buen día, soy **{nombre}**, {cargo}.\n\n'
+            f'Su reporte **{reporte.numero_control}** no procede. '
+            f'Motivo: {reporte.motivo_no_procede or "No cumple requisitos normativos."} '
+            'Puede aportar más documentación o solicitar revisión de su caso.'
         )
 
-    if any(w in msg for w in ('cuando', 'cuándo', 'fecha', 'plazo', 'tiempo')):
+    if any(w in msg for w in ('quien eres', 'quién eres', 'con quien', 'con quién', 'responsable', 'nombre')):
         return (
-            f'{dep}: Su reporte **{reporte.numero_control}** está en atención. '
-            f'La fecha estimada de respuesta o acción es **{fecha_txt}**. '
-            'Le notificaremos por este chat cualquier avance.'
+            f'Soy **{nombre}**, {cargo} de **{dep}**. '
+            f'Fui asignado(a) a su reporte **{reporte.numero_control}**. '
+            f'Lo recibimos el **{recibido}** y desde el **{inicio}** estoy dando seguimiento personal.'
         )
 
-    if any(w in msg for w in ('como', 'cómo', 'resolver', 'atender', 'proceso')):
+    if any(w in msg for w in ('cuando', 'cuándo', 'fecha', 'plazo', 'tiempo', 'recib', 'empez')):
         return (
-            f'{dep}: Su caso fue turnado a nuestra área. El proceso incluye: '
-            '(1) revisión documental, (2) visita o contacto si aplica, (3) resolución o canalización. '
-            f'Estimamos respuesta antes del **{fecha_txt}**.'
+            f'**{nombre}:** Su caso **{reporte.numero_control}** fue recibido el **{recibido}**. '
+            f'Inicié la atención el **{inicio}**. '
+            f'La fecha estimada de resolución es **{fecha_txt}**. Le mantendré informado por este chat.'
+        )
+
+    if any(w in msg for w in ('como', 'cómo', 'resolver', 'atender', 'proceso', 'paso', 'ruta')):
+        return (
+            f'**{nombre}:** El proceso incluye revisión de su reporte, verificación con las instancias competentes '
+            f'y gestión de la solución solicitada. '
+            f'Actualmente su trámite está en **{reporte.get_estado_display()}** dentro de **{dep}**. '
+            f'Estimamos concluir antes del **{fecha_txt}**.'
         )
 
     if any(w in msg for w in ('por que no', 'porqué no', 'no procede', 'rechaz')):
         return (
-            f'{dep}: Si su caso no puede resolverse, se le informará el fundamento legal o administrativo. '
-            'Puede solicitar aclaración aquí o escalar a la Contraloría si considera trato indebido.'
+            f'**{nombre}:** Si no es posible resolver su solicitud, le informaré el fundamento '
+            'con claridad. Puede pedir aclaración aquí o escalar a Contraloría si lo considera necesario.'
         )
 
     if any(w in msg for w in ('gracias', 'ok', 'entendido', 'bien')):
         return (
-            f'{dep}: Gracias por su seguimiento. Continuamos trabajando en su reporte **{reporte.numero_control}**. '
-            f'Próxima actualización estimada: **{fecha_txt}**.'
+            f'**{nombre}:** Gracias por su seguimiento. Continúo gestionando su reporte '
+            f'**{reporte.numero_control}**. Próxima actualización estimada: **{fecha_txt}**.'
         )
 
     return (
-        f'{dep}: Hemos recibido su mensaje sobre el reporte **{reporte.numero_control}**. '
-        f'Su solicitud permanece en estado **{reporte.get_estado_display()}**. '
-        f'Fecha estimada de atención: **{fecha_txt}**. ¿Desea saber cómo se atenderá o en qué paso va su trámite?'
+        f'**{nombre}** ({cargo}):\n'
+        f'He recibido su mensaje sobre **{reporte.numero_control}**. '
+        f'Su solicitud está en **{reporte.get_estado_display()}**. '
+        f'Recibido: **{recibido}** · Atención desde: **{inicio}** · '
+        f'Respuesta estimada: **{fecha_txt}**.\n\n'
+        '¿Desea saber en qué paso va, quién lo atiende o cuándo habrá resolución?'
     )
+
+
+def respuesta_dependencia_simulada(reporte, mensaje_ciudadano):
+    """Compatibilidad: delega al responsable de atención."""
+    return respuesta_responsable_simulada(reporte, mensaje_ciudadano)
 
 
 def crear_reporte_ciudadano(usuario, eje_slug, titulo, descripcion, datos_captura, municipio='', numero_control=None):
@@ -420,6 +641,8 @@ def crear_reporte_ciudadano(usuario, eje_slug, titulo, descripcion, datos_captur
     urgencia = datos_captura.get('urgencia', '')
     numero = numero_control or generar_numero_control()
     fecha_est = estimar_fecha_atencion(eje_slug, urgencia)
+    ruta = construir_ruta_tramite(eje_slug, dependencias)
+    responsable = obtener_responsable_activo(ruta)
 
     if eje_slug == 'empleo':
         perfil = analizar_perfil_empleo(datos_captura)
@@ -434,16 +657,19 @@ def crear_reporte_ciudadano(usuario, eje_slug, titulo, descripcion, datos_captur
         municipio=municipio or datos_captura.get('municipio', ''),
         dependencia_principal=dependencias[0]['nombre'] if dependencias else 'Coordinación MITA',
         dependencias_involucradas=dependencias,
-        ruta_tramite=construir_ruta_tramite(eje_slug, dependencias),
+        ruta_tramite=ruta,
+        responsable_atencion=responsable,
         estado=ReporteCiudadano.Estado.TURNADO,
         fecha_estimada_atencion=fecha_est,
         respuesta_dependencia=(
             f'Su reporte fue turnado a {dependencias[0]["nombre"]}. '
+            f'Responsable: {responsable.get("nombre", "Enlace ciudadano")}. '
             f'Fecha estimada de atención: {fecha_est.strftime("%d/%m/%Y")}.'
         ),
         creado_por=usuario,
     )
 
+    paso_activo = reporte.paso_activo or {}
     registrar_mensaje(
         reporte=reporte,
         tipo_autor=MensajeReporteCiudadano.TipoAutor.SISTEMA,
@@ -459,9 +685,8 @@ def crear_reporte_ciudadano(usuario, eje_slug, titulo, descripcion, datos_captur
         autor_nombre='Asistente IA MITA',
         contenido=(
             f'¡Registro exitoso! Su número de control es **{numero}**. '
-            f'Las dependencias involucradas son: '
-            + ', '.join(d['nombre'] for d in dependencias)
-            + '. Puede chatear con la dependencia en esta misma pantalla.'
+            f'Siga la **ruta de atención** para ver qué dependencia lo recibió, quién lo atiende y en qué fechas. '
+            f'Puede chatear directamente con **{responsable.get("nombre", "su enlace ciudadano")}**.'
             + (
                 '\n\n**Oportunidades sugeridas para su perfil:**\n'
                 + '\n'.join(f'• {r}' for r in datos_captura.get('recomendaciones_ia', []))
@@ -472,9 +697,17 @@ def crear_reporte_ciudadano(usuario, eje_slug, titulo, descripcion, datos_captur
     )
     registrar_mensaje(
         reporte=reporte,
-        tipo_autor=MensajeReporteCiudadano.TipoAutor.DEPENDENCIA,
-        autor_nombre=reporte.dependencia_principal,
-        contenido=reporte.respuesta_dependencia,
+        tipo_autor=MensajeReporteCiudadano.TipoAutor.RESPONSABLE,
+        autor_nombre=responsable.get('nombre', reporte.dependencia_principal),
+        contenido=(
+            f'Buen día, soy **{responsable.get("nombre", "Enlace ciudadano")}**, '
+            f'{responsable.get("cargo", "responsable de atención")}.\n\n'
+            f'Recibí su reporte **{numero}** el **{paso_activo.get("fecha_recibido_fmt", "hoy")}**. '
+            f'Estoy dando seguimiento personal a su caso. '
+            f'Fecha estimada de resolución: **{fecha_est.strftime("%d/%m/%Y")}**.\n\n'
+            'Escríbame aquí si tiene dudas sobre plazos, documentos o el avance de su trámite.'
+        ),
+        metadata={'responsable': responsable},
     )
     return reporte
 

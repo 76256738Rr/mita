@@ -335,4 +335,20 @@ def simular_reporte_ciudadano_demo(usuarios):
         'Ecatepec',
         numero_control=folio_demo,
     )
+    from core.ciudadania_services import enriquecer_ruta_demo, registrar_mensaje
+    from core.models import MensajeReporteCiudadano
+
+    enriquecer_ruta_demo(reporte, dias_atras=3)
+    responsable = reporte.responsable_atencion or {}
+    registrar_mensaje(
+        reporte=reporte,
+        tipo_autor=MensajeReporteCiudadano.TipoAutor.RESPONSABLE,
+        autor_nombre=responsable.get('nombre', 'Enlace ciudadano'),
+        contenido=(
+            f'**{responsable.get("nombre", "Enlace")}:** He verificado su expediente con el '
+            f'Hospital General Ecatepec Las Américas. Estamos gestionando el surtimiento de insulina. '
+            f'Le mantendré informado por este chat.'
+        ),
+        metadata={'responsable': responsable},
+    )
     return reporte

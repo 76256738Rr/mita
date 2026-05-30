@@ -40,85 +40,11 @@
 
       <nav>
 
-        {% if user_rol == 'publico' %}
-
-        <a href="{% url 'ciudadania-portal' %}"
-           class="{% if '/ciudadania' in request.path %}active{% endif %}">
-          🏛 Ventanilla Ciudadana
+        {% for item in menu_navegacion %}
+        <a href="{{ item.url }}" class="{% if item.active %}active{% endif %}">
+          {{ item.label }}
         </a>
-
-        <a href="{% url 'ciudadania-nuevo' %}"
-           class="{% if '/ciudadania/nuevo' in request.path %}active{% endif %}">
-          ➕ Registrar problemática
-        </a>
-
-        {% else %}
-
-        <a href="{% url 'dashboard' %}"
-           class="{% if request.path == '/' %}active{% endif %}">
-          📊 Dashboard
-        </a>
-
-        <a href="{% url 'bandeja' %}"
-           class="{% if '/bandeja' in request.path %}active{% endif %}">
-          📥 Bandeja de trabajo
-        </a>
-
-        <a href="{% url 'expedientes' %}"
-           class="{% if '/expedientes' in request.path %}active{% endif %}">
-          📁 Expedientes
-        </a>
-
-        <a href="{% url 'base-datos' %}"
-           class="{% if '/base-datos' in request.path %}active{% endif %}">
-          🧠 Base de Conocimiento
-        </a>
-
-        <a href="{% url 'mapa' %}"
-           class="{% if '/mapa' in request.path %}active{% endif %}">
-          🗺️ Mapa Geoespacial
-        </a>
-
-        <a href="{% url 'proceso' %}"
-           class="{% if '/proceso' in request.path %}active{% endif %}">
-          ⚙️ Proceso Operativo
-        </a>
-
-        <a href="{% url 'metodologia' %}"
-           class="{% if '/metodologia' in request.path %}active{% endif %}">
-          📚 Metodología MITA
-        </a>
-
-        <a href="{% url 'proyecto' %}"
-           class="{% if '/proyecto' in request.path %}active{% endif %}">
-          🚀 Proyecto Demo
-        </a>
-
-        <a href="{% url 'analogia' %}"
-           class="{% if '/analogia' in request.path %}active{% endif %}">
-          🔬 Motor Analógico
-        </a>
-
-        <a href="{% url 'dictamenes' %}"
-           class="{% if '/dictamenes' in request.path %}active{% endif %}">
-          ⚖️ Dictámenes
-        </a>
-
-        <a href="{% url 'sni' %}"
-           class="{% if '/sni' in request.path %}active{% endif %}">
-          👨‍🔬 Perfiles SNI
-        </a>
-
-        <a href="{% url 'reportes' %}"
-           class="{% if '/reportes' in request.path %}active{% endif %}">
-          📈 Reportes
-        </a>
-
-        <a href="/admin/">
-          🔐 Administración
-        </a>
-
-        {% endif %}
+        {% endfor %}
 
         {% if user.is_authenticated %}
 

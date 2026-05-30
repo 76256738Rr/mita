@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Ruta gráfica de atención — MITA{% endblock %}
+{% block page_title %}Ruta gráfica de atención{% endblock %}
+
+{% block content %}
+<div class="alert alert-info">
+  Visualice el <strong>workflow gráfico</strong> de su problemática: dependencias, responsables y fechas de atención en el {{ entidad }}.
+</div>
+
+{% if not reportes %}
+<div class="card workflow-empty">
+  <img src="{% static 'img/ciudadania/workflow/paso-recepcion.svg' %}" alt="" class="workflow-empty-icon">
+  <h3>Aún no tiene reportes registrados</h3>
+  <p>Registre su problemática para ver aquí la ruta gráfica de atención con las dependencias que intervienen.</p>
+  <a href="{% url 'ciudadania-nuevo' %}" class="btn btn-primary">Registrar problemática →</a>
+</div>
+{% else %}
+
+<div class="card workflow-selector-card">
+  <form method="get" class="workflow-selector-form">
+    <label for="select-reporte">Seleccione su reporte</label>
+    <select name="reporte" id="select-reporte" onchange="this.form.submit()">
+      {% for r in reportes %}
+      <option value="{{ r.pk }}" {% if reporte.pk == r.pk %}selected{% endif %}>
+        {{ r.numero_control }} — {{ r.get_eje_display }} — {{ r.get_estado_display }}
+      </option>
+      {% endfor %}
+    </select>
+  </form>
+  {% if reporte %}
+  <div class="workflow-reporte-meta">
+    <span class="badge badge-info">{{ reporte.get_estado_display }}</span>
+    <span>{{ reporte.titulo|truncatechars:60 }}</span>
+    {% if reporte.fecha_estimada_atencion %}
+    <span class="workflow-meta-date">Resolución estimada: {{ reporte.fecha_estimada_atencion|date:"d/m/Y" }}</span>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+{% if reporte and responsable.nombre %}
+<div class="card responsable-card workflow-responsable-banner">
+  <div class="responsable-card-inner">
+    <img src="{% static 'img/ciudadania/workflow/paso-atencion.svg' %}" alt="" class="workflow-responsable-img">
+    <div>
+      <h3 style="margin:0;font-size:1rem;">Responsable actual de atención</h3>
+      <p style="margin:0.25rem 0 0;font-weight:600;">{{ responsable.nombre }}</p>
+      <p style="margin:0.15rem 0 0;font-size:0.85rem;color:var(--mita-muted);">{{ responsable.cargo }}</p>
+    </div>
+    <a href="{% url 'ciudadania-detalle' reporte.pk %}" class="btn btn-primary btn-sm">Ir al chat →</a>
+  </div>
+</div>
+{% endif %}
+
+<div class="card workflow-grafico-card">
+  <h3>Workflow de dependencias</h3>
+  <p class="workflow-grafico-sub">Cada nodo representa una etapa institucional con imagen, responsable y fechas.</p>
+
+  <div class="workflow-grafico-scroll">
+    <div class="workflow-grafico-track">
+      {% for paso in ruta_grafica %}
+      <div class="workflow-nodo workflow-nodo-{{ paso.estado }}" data-orden="{{ paso.orden }}">
+        {% if not forloop.first %}
+        <div class="workflow-conector workflow-conector-{{ paso.estado }}">
+          <span class="workflow-flecha"></span>
+        </div>
+        {% endif %}
+
+        <div class="workflow-nodo-card">
+          <div class="workflow-nodo-img-wrap">
+            <img src="{% static paso.icono %}" alt="{{ paso.nombre }}" class="workflow-nodo-img">
+            {% if paso.estado == 'activo' %}
+            <img src="{% static 'img/ciudadania/workflow/paso-activo.svg' %}" alt="" class="workflow-nodo-pulse" aria-hidden="true">
+            {% endif %}
+            <span class="workflow-nodo-num">{{ paso.orden }}</span>
+          </div>
+
+          <div class="workflow-nodo-body">
+            <span class="badge badge-{% if paso.estado == 'completado' %}success{% elif paso.estado == 'activo' %}warning{% else %}info{% endif %}">
+              {{ paso.estado_label }}
+            </span>
+            <h4>{{ paso.nombre }}</h4>
+            <p class="workflow-nodo-dep">{{ paso.dependencia }}</p>
+            <p class="workflow-nodo-desc">{{ paso.descripcion }}</p>
+
+            {% if paso.responsable %}
+            <div class="workflow-nodo-persona">
+              <img src="{% static paso.icono %}" alt="" class="workflow-persona-mini">
+              <div>
+                <strong>{{ paso.responsable.nombre }}</strong>
+                <span>{{ paso.responsable.cargo }}</span>
+              </div>
+            </div>
+            {% endif %}
+
+            <ul class="workflow-nodo-fechas">
+              <li><strong>Recibido:</strong> {{ paso.fecha_recibido_fmt|default:"—" }}</li>
+              <li><strong>Inicio atención:</strong> {{ paso.fecha_inicio_atencion_fmt|default:"—" }}</li>
+              {% if paso.fecha_fin_fmt and paso.fecha_fin_fmt != "—" %}
+              <li><strong>Concluido:</strong> {{ paso.fecha_fin_fmt }}</li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-2 workflow-actions">
+  <div class="card">
+    <h4>Leyenda del workflow</h4>
+    <ul class="workflow-leyenda">
+      <li><span class="leyenda-dot leyenda-completado"></span> Completado — etapa finalizada</li>
+      <li><span class="leyenda-dot leyenda-activo"></span> En atención — paso actual</li>
+      <li><span class="leyenda-dot leyenda-pendiente"></span> Pendiente — por iniciar</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>Acciones</h4>
+    <p style="font-size:0.9rem;margin-bottom:0.75rem;">Consulte el detalle completo o escriba al responsable asignado.</p>
+    <a href="{% url 'ciudadania-detalle' reporte.pk %}" class="btn btn-primary">Ver detalle y chat</a>
+    <a href="{% url 'ciudadania-portal' %}" class="btn btn-sm" style="margin-left:0.5rem;">Mis reportes</a>
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}

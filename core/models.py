@@ -84,6 +84,7 @@ class ReporteCiudadano(models.Model):
     dependencia_principal = models.CharField(max_length=200)
     dependencias_involucradas = models.JSONField(default=list, blank=True)
     ruta_tramite = models.JSONField(default=list, blank=True)
+    responsable_atencion = models.JSONField(default=dict, blank=True)
     estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.RECIBIDO)
     respuesta_dependencia = models.TextField(blank=True)
     fecha_estimada_atencion = models.DateField(null=True, blank=True)
@@ -109,6 +110,22 @@ class ReporteCiudadano(models.Model):
         from core.ciudadania_config import get_eje_config
         return get_eje_config(self.eje)
 
+    @property
+    def paso_activo(self):
+        for paso in self.ruta_tramite or []:
+            if paso.get('estado') == 'activo':
+                return paso
+        return None
+
+    @property
+    def responsable_actual(self):
+        if self.responsable_atencion:
+            return self.responsable_atencion
+        paso = self.paso_activo
+        if paso and paso.get('responsable'):
+            return paso['responsable']
+        return {}
+
 
 class MensajeReporteCiudadano(models.Model):
     """Mensajes del chat ciudadano — IA, dependencia o sistema."""
@@ -117,6 +134,7 @@ class MensajeReporteCiudadano(models.Model):
         CIUDADANO = 'ciudadano', 'Ciudadano'
         IA = 'ia', 'Asistente IA MITA'
         DEPENDENCIA = 'dependencia', 'Dependencia'
+        RESPONSABLE = 'responsable', 'Responsable de atención'
         SISTEMA = 'sistema', 'Sistema'
 
     reporte = models.ForeignKey(

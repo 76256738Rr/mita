@@ -11,11 +11,12 @@ from core.ciudadania_config import EJES_CIUDADANIA, ENTIDAD, get_eje_config, lis
 from core.ciudadania_ubicaciones import obtener_centros_salud, obtener_ubicaciones_eje, ubicaciones_json
 from core.ciudadania_services import (
     crear_reporte_ciudadano,
+    marcar_inicio_atencion,
     mensaje_bienvenida_general,
     nueva_sesion_asistente,
     registrar_mensaje,
     respuesta_asistente_ia,
-    respuesta_dependencia_simulada,
+    respuesta_responsable_simulada,
 )
 from core.models import MensajeReporteCiudadano, ReporteCiudadano
 from core.permissions import es_publico_general, obtener_rol, requiere_publico
@@ -146,9 +147,35 @@ def reporte_nuevo_view(request):
 
 @login_required
 @requiere_publico
+def workflow_grafico_view(request):
+    """Vista gráfica del workflow de atención ciudadana."""
+    from core.ciudadania_services import enriquecer_ruta_grafica
+
+    reportes = ReporteCiudadano.objects.filter(creado_por=request.user).order_by('-creado_en')
+    reporte_id = request.GET.get('reporte')
+    reporte = None
+    if reporte_id:
+        reporte = reportes.filter(pk=reporte_id).first()
+    if not reporte and reportes.exists():
+        reporte = reportes.first()
+
+    ruta_grafica = enriquecer_ruta_grafica(reporte.ruta_tramite) if reporte else []
+    return render(request, 'ciudadania/workflow_grafico.html', {
+        'reportes': reportes,
+        'reporte': reporte,
+        'ruta_grafica': ruta_grafica,
+        'responsable': (reporte.responsable_atencion or reporte.responsable_actual) if reporte else {},
+        'paso_activo': reporte.paso_activo if reporte else None,
+        'entidad': ENTIDAD,
+    })
+
+
+@login_required
+@requiere_publico
 def reporte_detalle_view(request, pk):
     reporte = get_object_or_404(ReporteCiudadano, pk=pk, creado_por=request.user)
     mensajes = reporte.mensajes.all()
+    responsable = reporte.responsable_atencion or reporte.responsable_actual or {}
     ubicaciones = (
         obtener_centros_salud(reporte.municipio)
         if reporte.eje == 'salud'
@@ -161,6 +188,8 @@ def reporte_detalle_view(request, pk):
         'ubicaciones': ubicaciones,
         'ubicaciones_json': json.dumps(ubicaciones, ensure_ascii=False),
         'centro_salud_slug': reporte.datos_captura.get('centro_salud', ''),
+        'responsable': responsable,
+        'paso_activo': reporte.paso_activo,
         'entidad': ENTIDAD,
     })
 
@@ -249,22 +278,48 @@ def reporte_chat_api(request, pk):
     if reporte.estado == ReporteCiudadano.Estado.TURNADO:
         reporte.estado = ReporteCiudadano.Estado.EN_ATENCION
         reporte.save(update_fields=['estado', 'actualizado_en'])
+        marcar_inicio_atencion(reporte)
 
-    resp_dep = respuesta_dependencia_simulada(reporte, mensaje)
-    msg_dep = registrar_mensaje(
+    resp = respuesta_responsable_simulada(reporte, mensaje)
+    responsable = reporte.responsable_atencion or reporte.responsable_actual or {}
+    autor_resp = responsable.get('nombre', reporte.dependencia_principal)
+    msg_resp = registrar_mensaje(
         reporte=reporte,
-        tipo_autor=MensajeReporteCiudadano.TipoAutor.DEPENDENCIA,
-        autor_nombre=reporte.dependencia_principal,
-        contenido=resp_dep,
+        tipo_autor=MensajeReporteCiudadano.TipoAutor.RESPONSABLE,
+        autor_nombre=autor_resp,
+        contenido=resp,
+        metadata={'responsable': responsable},
     )
 
     return JsonResponse({
         'mensajes': [
             {'tipo': 'ciudadano', 'autor': autor, 'contenido': mensaje},
-            {'tipo': 'dependencia', 'autor': reporte.dependencia_principal, 'contenido': resp_dep, 'id': msg_dep.pk},
+            {'tipo': 'responsable', 'autor': autor_resp, 'contenido': resp, 'id': msg_resp.pk},
         ],
         'estado': reporte.estado,
         'estado_label': reporte.get_estado_display(),
+        'ruta': reporte.ruta_tramite,
+        'responsable': responsable,
+        'paso_activo': reporte.paso_activo,
+    })
+
+
+@login_required
+@require_GET
+def ruta_atencion_api(request, pk):
+    """Estado actual de la ruta de atención y responsable asignado."""
+    reporte = get_object_or_404(ReporteCiudadano, pk=pk)
+    if obtener_rol(request.user) == 'publico' and reporte.creado_por_id != request.user.pk:
+        return JsonResponse({'error': 'No autorizado'}, status=403)
+
+    return JsonResponse({
+        'numero_control': reporte.numero_control,
+        'estado': reporte.estado,
+        'estado_label': reporte.get_estado_display(),
+        'ruta': reporte.ruta_tramite,
+        'responsable': reporte.responsable_atencion or reporte.responsable_actual,
+        'paso_activo': reporte.paso_activo,
+        'fecha_estimada_atencion': reporte.fecha_estimada_atencion.isoformat() if reporte.fecha_estimada_atencion else None,
     })
 
 

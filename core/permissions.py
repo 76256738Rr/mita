@@ -25,6 +25,17 @@ def obtener_rol(usuario):
     return perfil.rol if perfil else 'dependencia'
 
 
+def url_inicio_rol(rol):
+    """Ruta de inicio según rol (menú y redirecciones)."""
+    if rol == 'publico':
+        return 'ciudadania-portal'
+    if rol == 'dependencia':
+        return 'expediente-nuevo'
+    if rol == 'auditor':
+        return 'expedientes'
+    return 'bandeja'
+
+
 def es_publico_general(usuario):
     return obtener_rol(usuario) == 'publico'
 
@@ -38,7 +49,7 @@ def requiere_publico(view_func):
             from django.contrib import messages
             from django.shortcuts import redirect
             messages.error(request, 'Esta sección es exclusiva para ciudadanos.')
-            return redirect('bandeja')
+            return redirect(url_inicio_rol(obtener_rol(request.user)))
         return view_func(request, *args, **kwargs)
     return wrapper
 
@@ -54,7 +65,7 @@ def rol_minimo(rol_requerido):
                 from django.contrib import messages
                 from django.shortcuts import redirect
                 messages.error(request, 'No tiene permisos para esta acción.')
-                return redirect('bandeja')
+                return redirect(url_inicio_rol(rol))
             return view_func(request, *args, **kwargs)
         return wrapper
     return decorator
@@ -68,7 +79,6 @@ def puede_gestionar_expediente(usuario, expediente):
         return True
     if expediente.creado_por_id == usuario.pk or expediente.responsable_id == usuario.pk:
         return True
-    paso_info = None
     from mita_engine.workflow import PASOS
     paso_info = PASOS.get(expediente.paso_actual, {})
     rol_paso = paso_info.get('rol', 'dependencia')

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa de Funcionalidad — Plataforma MITA</title>
+  <style>
+    :root {
+      --primary: #1a365d;
+      --secondary: #2c5282;
+      --accent: #3182ce;
+      --success: #276749;
+      --warning: #d69e2e;
+      --muted: #718096;
+      --border: #e2e8f0;
+      --bg: #f7fafc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #2d3748;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 2.5rem 4rem;
+      background: #fff;
+    }
+    .cover {
+      text-align: center;
+      padding: 2.5rem 1rem 2rem;
+      border-bottom: 3px solid var(--primary);
+      margin-bottom: 2rem;
+      background: linear-gradient(180deg, #f8fbff 0%, #fff 100%);
+    }
+    .cover h1 { font-size: 1.75rem; color: var(--primary); margin-bottom: 0.25rem; }
+    .cover .subtitle { font-size: 1rem; color: var(--secondary); margin-bottom: 1rem; }
+    .cover .meta { font-size: 0.88rem; color: var(--muted); }
+    h2 {
+      color: var(--primary);
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0.35rem;
+      margin-top: 2rem;
+      page-break-after: avoid;
+    }
+    h3 { color: var(--secondary); margin-top: 1.25rem; }
+    p, li { font-size: 0.92rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.75rem 0 1.25rem;
+      font-size: 0.84rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.45rem 0.6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: var(--bg); color: var(--primary); font-weight: 600; }
+    .center { text-align: center; }
+    .ok { color: var(--success); font-weight: 700; }
+    .no { color: #cbd5e0; }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 1rem;
+      background: var(--bg); padding: 0.75rem 1rem; border-radius: 8px;
+      margin: 1rem 0 1.5rem; font-size: 0.85rem;
+    }
+    .legend span { margin-right: 0.5rem; }
+    .badge {
+      display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px;
+      font-size: 0.75rem; font-weight: 700;
+    }
+    .badge-a { background: #fed7d7; color: #c53030; }
+    .badge-g { background: #c6f6d5; color: #276749; }
+    .badge-c { background: #bee3f8; color: #2c5282; }
+    .badge-e { background: #faf5ff; color: #553c9a; }
+    .flow-box {
+      background: #1a202c; color: #e2e8f0; padding: 1rem 1.25rem;
+      border-radius: 8px; font-family: Consolas, monospace; font-size: 0.8rem;
+      line-height: 1.5; overflow-x: auto; margin: 0.75rem 0 1.25rem;
+    }
+    .role-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.75rem; margin: 1rem 0 1.5rem;
+    }
+    .role-card {
+      border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem;
+      border-left: 4px solid var(--accent);
+    }
+    .role-card h4 { margin: 0 0 0.35rem; font-size: 0.9rem; color: var(--primary); }
+    .role-card p { margin: 0; font-size: 0.78rem; color: var(--muted); }
+    .role-card code { font-size: 0.75rem; }
+    @media print {
+      body { padding: 1rem; font-size: 10pt; }
+      .cover { page-break-after: always; }
+      h2 { page-break-before: auto; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>Mapa de Funcionalidad</h1>
+  <p class="subtitle">Plataforma MITA — Multi-Intercultural-Transdisciplina Analógica</p>
+  <p class="subtitle">Gobierno del Estado de México</p>
+  <p class="meta">Integración de módulos, roles, privilegios, rutas y APIs · 2026</p>
+</div>
+
+<h2>1. Propósito</h2>
+<p>Este documento consolida el <strong>mapa funcional completo</strong> de MITA: qué puede hacer cada rol, qué rutas y APIs utiliza, y cómo se relacionan los flujos institucional (expedientes) y ciudadano (ventanilla Edomex).</p>
+
+<div class="legend">
+  <span><span class="badge badge-a">A</span> Administración</span>
+  <span><span class="badge badge-g">G</span> Gestión</span>
+  <span><span class="badge badge-c">C</span> Consulta</span>
+  <span><span class="badge badge-e">E</span> Exclusivo del rol</span>
+  <span><strong>—</strong> Sin acceso</span>
+</div>
+
+<h2>2. Roles del sistema</h2>
+<div class="role-grid">
+  <div class="role-card" style="border-left-color:#1a365d">
+    <h4>Administrador</h4>
+    <p>Dictamen paso 7, admin Django, acceso total.</p>
+    <code>admin / mita2026</code>
+  </div>
+  <div class="role-card" style="border-left-color:#2c5282">
+    <h4>Analista MITA</h4>
+    <p>Pasos 2–5, motor analógico, mapa, conocimiento.</p>
+    <code>analista / mita2026</code>
+  </div>
+  <div class="role-card" style="border-left-color:#276749">
+    <h4>Investigador SNI</h4>
+    <p>Paso 6, perfiles SNI, dictámenes (consulta).</p>
+    <code>investigador / mita2026</code>
+  </div>
+  <div class="role-card" style="border-left-color:#3182ce">
+    <h4>Dependencia</h4>
+    <p>Paso 1, registro de asuntos y expedientes.</p>
+    <code>dependencia / mita2026</code>
+  </div>
+  <div class="role-card" style="border-left-color:#718096">
+    <h4>Auditor</h4>
+    <p>Solo lectura: expedientes, dictámenes, reportes.</p>
+    <code>auditor / mita2026</code>
+  </div>
+  <div class="role-card" style="border-left-color:#38a169">
+    <h4>Público general</h4>
+    <p>Ventanilla ciudadana Edomex exclusiva.</p>
+    <code>ciudadano / mita2026</code>
+  </div>
+</div>
+
+<table>
+  <tr><th>Rol</th><th>Clave</th><th>Nivel</th><th>Alcance principal</th></tr>
+  <tr><td>Administrador</td><td><code>admin</code></td><td class="center">4</td><td>Workflow completo + Django Admin</td></tr>
+  <tr><td>Analista MITA</td><td><code>analista</code></td><td class="center">3</td><td>Conocimiento, mapa, analogía, pasos 2–5</td></tr>
+  <tr><td>Investigador SNI</td><td><code>investigador</code></td><td class="center">2</td><td>Evaluación paso 6, SNI, dictámenes</td></tr>
+  <tr><td>Dependencia</td><td><code>dependencia</code></td><td class="center">1</td><td>Definición del asunto — paso 1</td></tr>
+  <tr><td>Auditor</td><td><code>auditor</code></td><td class="center">1</td><td>Trazabilidad y consulta (sin edición)</td></tr>
+  <tr><td>Público general</td><td><code>publico</code></td><td class="center">0</td><td>Ventanilla ciudadana — solo Edomex</td></tr>
+</table>
+
+<h2>3. Arquitectura funcional</h2>
+<div class="flow-box">[ Login ] ──┬── Portal Institucional ──┬── Dashboard / Bandeja / Expedientes (7 pasos)
+            │                          ├── Base Conocimiento / Mapa / Proceso
+            │                          ├── Motor Analógico / Dictámenes / SNI / Reportes
+            │                          └── Django Admin (solo admin)
+            │
+            └── Ventanilla Ciudadana (solo publico) ──┬── Registro + IA
+                                                      ├── Ruta gráfica de atención
+                                                      └── Chat con responsable Edomex
+
+            API REST (/api/) ── Workflow · MITA · Geoespacial · Reportes · Búsqueda</div>
+
+<h2>4. Módulos y requisitos funcionales</h2>
+<table>
+  <tr><th>Módulo</th><th>Ruta</th><th>RF</th><th>Descripción</th></tr>
+  <tr><td>Dashboard</td><td><code>/</code></td><td>RF-08, 11</td><td>Resumen operativo y métricas</td></tr>
+  <tr><td>Bandeja</td><td><code>/bandeja/</code></td><td>RF-08</td><td>Tareas pendientes por usuario</td></tr>
+  <tr><td>Expedientes</td><td><code>/expedientes/</code></td><td>RF-08</td><td>Workflow institucional 7 pasos</td></tr>
+  <tr><td>Base de Conocimiento</td><td><code>/base-datos/</code></td><td>RF-01, 02</td><td>Disciplinas y fuentes validadas</td></tr>
+  <tr><td>Mapa Geoespacial</td><td><code>/mapa/</code></td><td>RF-07</td><td>Hotspots y capas SIG Edomex</td></tr>
+  <tr><td>Proceso Operativo</td><td><code>/proceso/</code></td><td>RF-08</td><td>Vista integrada del workflow</td></tr>
+  <tr><td>Metodología</td><td><code>/metodologia/</code></td><td>RF-02</td><td>Ejes analógicos A–F</td></tr>
+  <tr><td>Proyecto Demo</td><td><code>/proyecto/</code></td><td>RF-05, 06</td><td>EDOMEX Diabetes referencia</td></tr>
+  <tr><td>Motor Analógico</td><td><code>/analogia/</code></td><td>RF-06</td><td>Evaluación y riesgos sistémicos</td></tr>
+  <tr><td>Dictámenes</td><td><code>/dictamenes/</code></td><td>RF-06, 08</td><td>Validación oficial + PDF</td></tr>
+  <tr><td>Perfiles SNI</td><td><code>/sni/</code></td><td>RF-02</td><td>Investigadores SNI</td></tr>
+  <tr><td>Reportes</td><td><code>/reportes/</code></td><td>RF-11</td><td>Indicadores de impacto</td></tr>
+  <tr><td>Admin Django</td><td><code>/admin/</code></td><td>Seguridad</td><td>Catálogos y usuarios</td></tr>
+  <tr><td>Ventanilla Ciudadana</td><td><code>/ciudadania/</code></td><td>Extensión</td><td>Portal público Edomex + IA</td></tr>
+</table>
+
+<h2>5. Menú lateral por rol</h2>
+<table>
+  <tr>
+    <th>Funcionalidad</th>
+    <th class="center">Admin</th>
+    <th class="center">Analista</th>
+    <th class="center">Investig.</th>
+    <th class="center">Dep.</th>
+    <th class="center">Auditor</th>
+    <th class="center">Público</th>
+  </tr>
+  <tr><td>Dashboard</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center no">—</td></tr>
+  <tr><td>Bandeja de trabajo</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center no">—</td><td class="center no">—</td></tr>
+  <tr><td>Expedientes</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center no">—</td></tr>
+  <tr><td>Registrar asunto</td><td class="center ok">✓</td><td class="center no">—</td><td class="center no">—</td><td class="center ok">✓</td><td class="center no">—</td><td class="center no">—</td></tr>
+  <tr><td>Base de Conocimiento</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td></tr>
+  <tr><td>Mapa Geoespacial</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td></tr>
+  <tr><td>Proceso Operativo</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center no">—</td><td class="center no">—</td></tr>
+  <tr><td>Metodología MITA</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td></tr>
+  <tr><td>Proyecto Demo</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td></tr>
+  <tr><td>Motor Analógico</td><td class="center ok">✓</td><td class="center ok">✓</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td></tr>
+  <tr><td>Dictámenes</td><td class="center ok">✓</td><td class="center no">—</td><td class="center ok">✓</td><td class="center no">—</td><td class="center ok">✓</td><td class="center no">—</td></tr>
+  <tr><td>Perfiles SNI</td><td class="center ok">✓</td><td class="center no">—</td><td class="center ok">✓</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td></tr>
+  <tr><td>Reportes</td><td class="center ok">✓</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td><td class="center ok">✓</td><td class="center no">—</td></tr>
+  <tr><td>Administración</td><td class="center ok">✓</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td></tr>
+  <tr><td>Ventanilla Ciudadana</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td><td class="center ok">✓</td></tr>
+  <tr><td>Registrar problemática</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td><td class="center ok">✓</td></tr>
+  <tr><td>Ruta gráfica de atención</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td><td class="center no">—</td><td class="center ok">✓</td></tr>
+</table>
+
+<h2>6. Privilegios en expedientes (workflow 7 pasos)</h2>
+<table>
+  <tr><th>Paso</th><th>Nombre</th><th>Rol responsable</th><th>Admin</th><th>Analista</th><th>Investig.</th><th>Dep.</th><th>Auditor</th></tr>
+  <tr><td>1</td><td>Definición del asunto</td><td>Dependencia</td><td>G</td><td>—</td><td>—</td><td>G</td><td>C</td></tr>
+  <tr><td>2</td><td>Recopilación conocimiento</td><td>Analista</td><td>G</td><td>G</td><td>—</td><td>—</td><td>C</td></tr>
+  <tr><td>3</td><td>Organización y relación</td><td>Analista</td><td>G</td><td>G</td><td>—</td><td>—</td><td>C</td></tr>
+  <tr><td>4</td><td>Análisis y analogía</td><td>Analista</td><td>G</td><td>G</td><td>—</td><td>—</td><td>C</td></tr>
+  <tr><td>5</td><td>Generación de opciones</td><td>Analista</td><td>G</td><td>G</td><td>—</td><td>—</td><td>C</td></tr>
+  <tr><td>6</td><td>Evaluación y selección</td><td>Investigador</td><td>G</td><td>—</td><td>G</td><td>—</td><td>C</td></tr>
+  <tr><td>7</td><td>Dictamen de validación</td><td>Administrador</td><td>G</td><td>—</td><td>—</td><td>—</td><td>C</td></tr>
+</table>
+<p><em>La gestión (G) en un paso requiere que el nivel del rol sea ≥ rol del paso, o ser creador/responsable del expediente. El auditor solo consulta (C).</em></p>
+
+<h2>7. Ventanilla ciudadana — funcionalidades exclusivas</h2>
+<table>
+  <tr><th>Función</th><th>Ruta</th><th>Privilegio</th></tr>
+  <tr><td>Portal de reportes</td><td><code>/ciudadania/</code></td><td><span class="badge badge-e">E</span> publico</td></tr>
+  <tr><td>Registro por eje (Salud, Educación, Empleo…)</td><td><code>/ciudadania/nuevo/</code></td><td><span class="badge badge-e">E</span> publico</td></tr>
+  <tr><td>Asistente IA de captura</td><td><code>/ciudadania/api/asistente/</code></td><td><span class="badge badge-e">E</span> publico</td></tr>
+  <tr><td>Centros de salud Edomex (ISSEM/SEDESA)</td><td><code>/ciudadania/api/centros-salud/</code></td><td><span class="badge badge-e">E</span> publico</td></tr>
+  <tr><td>Mapa de ubicaciones por eje/municipio</td><td>API ubicaciones</td><td><span class="badge badge-e">E</span> publico</td></tr>
+  <tr><td>Número de control MITA-CIU-YYYY-NNNNN</td><td>Al registrar</td><td><span class="badge badge-e">E</span> publico</td></tr>
+  <tr><td>Ruta gráfica workflow dependencias</td><td><code>/ciudadania/ruta-grafica/</code></td><td><span class="badge badge-e">E</span> publico</td></tr>
+  <tr><td>Chat con responsable de atención</td><td><code>/ciudadania/reporte/&lt;id&gt;/</code></td><td><span class="badge badge-e">E</span> publico (propios)</td></tr>
+</table>
+
+<h3>Flujo de atención ciudadana</h3>
+<div class="flow-box">Registro → Recepción MITA → Clasificación por eje → Turnado dependencia
+         → Atención (responsable + fechas) → Coordinación → Respuesta oficial
+         [Paralelo: Chat ciudadano ↔ responsable | Ruta gráfica visual]</div>
+
+<h2>8. API REST — endpoints principales</h2>
+<table>
+  <tr><th>Endpoint</th><th>Método</th><th>Función</th><th>Rol típico</th></tr>
+  <tr><td><code>/api/expedientes/</code></td><td>GET, POST</td><td>Listar / crear expediente</td><td>dependencia, admin</td></tr>
+  <tr><td><code>/api/expedientes/&lt;id&gt;/paso/</code></td><td>POST</td><td>Guardar paso workflow</td><td>Según paso activo</td></tr>
+  <tr><td><code>/api/expedientes/&lt;id&gt;/avanzar/</code></td><td>POST</td><td>Avanzar al siguiente paso</td><td>Según paso activo</td></tr>
+  <tr><td><code>/api/bandeja/</code></td><td>GET</td><td>Tareas pendientes</td><td>analista, dependencia</td></tr>
+  <tr><td><code>/api/mita/cruce/</code></td><td>POST</td><td>Cruce interdisciplinario</td><td>analista</td></tr>
+  <tr><td><code>/api/mita/analogia/</code></td><td>POST</td><td>Evaluación analógica</td><td>analista</td></tr>
+  <tr><td><code>/api/mita/dictamen/</code></td><td>POST</td><td>Generar dictamen + PDF</td><td>analista, admin</td></tr>
+  <tr><td><code>/api/mita/dictamen/&lt;id&gt;/pdf/</code></td><td>GET</td><td>Descargar PDF</td><td>investigador, auditor, admin</td></tr>
+  <tr><td><code>/api/geoespacial/zonas/</code></td><td>GET</td><td>Zonas SIG</td><td>analista</td></tr>
+  <tr><td><code>/api/reportes/indicadores/</code></td><td>GET</td><td>KPIs de impacto</td><td>auditor, admin</td></tr>
+  <tr><td><code>/api/buscar/</code></td><td>GET</td><td>Búsqueda semántica</td><td>analista, admin</td></tr>
+</table>
+
+<h2>9. Matriz RF × acceso por rol</h2>
+<table>
+  <tr><th>RF</th><th>Descripción</th><th>Roles con acceso</th></tr>
+  <tr><td>RF-01</td><td>Base de conocimiento</td><td>admin, analista</td></tr>
+  <tr><td>RF-02</td><td>Multi-interdisciplina / SNI</td><td>admin, analista, investigador</td></tr>
+  <tr><td>RF-03</td><td>Cruces interdisciplinarios</td><td>admin, analista</td></tr>
+  <tr><td>RF-04</td><td>Interculturalidad</td><td>admin, analista (API)</td></tr>
+  <tr><td>RF-05</td><td>Síntesis transdisciplinaria</td><td>admin, analista</td></tr>
+  <tr><td>RF-06</td><td>Motor analógico / dictámenes</td><td>admin, analista (G); investigador, auditor (C)</td></tr>
+  <tr><td>RF-07</td><td>Geoespacial Edomex</td><td>admin, analista; publico (centros salud)</td></tr>
+  <tr><td>RF-08</td><td>Workflow expedientes</td><td>admin, analista, investigador, dependencia; auditor (C)</td></tr>
+  <tr><td>RF-09</td><td>Búsqueda semántica</td><td>admin, analista</td></tr>
+  <tr><td>RF-10</td><td>Legislación</td><td>admin, analista (API)</td></tr>
+  <tr><td>RF-11</td><td>Reportes de impacto</td><td>admin, auditor</td></tr>
+  <tr><td>—</td><td>Ventanilla ciudadana</td><td>publico (exclusivo)</td></tr>
+</table>
+
+<h2>10. Redirección post-login</h2>
+<table>
+  <tr><th>Rol</th><th>Destino por defecto</th></tr>
+  <tr><td><code>publico</code></td><td><code>/ciudadania/</code></td></tr>
+  <tr><td><code>dependencia</code></td><td><code>/expedientes/nuevo/</code></td></tr>
+  <tr><td><code>analista</code></td><td>Expediente demo paso 4 o bandeja</td></tr>
+  <tr><td><code>investigador</code></td><td>Expediente demo paso 6</td></tr>
+  <tr><td><code>admin</code></td><td>Expediente demo paso 7</td></tr>
+  <tr><td><code>auditor</code></td><td>Expediente demo dictaminado</td></tr>
+</table>
+
+<h2>11. Referencias en código</h2>
+<table>
+  <tr><th>Componente</th><th>Archivo</th></tr>
+  <tr><td>Roles y permisos</td><td><code>core/permissions.py</code></td></tr>
+  <tr><td>Menú por rol</td><td><code>core/navigation.py</code></td></tr>
+  <tr><td>Workflow 7 pasos</td><td><code>mita_engine/workflow.py</code></td></tr>
+  <tr><td>Ventanilla ciudadana</td><td><code>core/ciudadania_*.py</code></td></tr>
+  <tr><td>Rutas web</td><td><code>mita_platform/urls.py</code></td></tr>
+  <tr><td>API REST</td><td><code>api/urls.py</code></td></tr>
+</table>
+
+<p style="margin-top:2.5rem;font-size:0.85rem;color:var(--muted);text-align:center;">
+  Mapa de Funcionalidad MITA · Complemento de Ficha Técnica y Manual de Usuario · Estado de México 2026
+</p>
+
+</body>
+</html>

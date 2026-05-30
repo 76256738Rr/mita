@@ -19,10 +19,12 @@ from core.ciudadania_views import (
     asistente_ia_api,
     campos_eje_api,
     centros_salud_api,
+    workflow_grafico_view,
     portal_ciudadano_view,
     reporte_chat_api,
     reporte_detalle_view,
     reporte_nuevo_view,
+    ruta_atencion_api,
     ubicaciones_eje_api,
 )
 from core.workflow_views import (
@@ -41,6 +43,7 @@ urlpatterns = [
     path('expedientes/nuevo/', expediente_nuevo_view, name='expediente-nuevo'),
     path('expedientes/<int:pk>/', expediente_detalle_view, name='expediente-detalle'),
     path('ciudadania/', portal_ciudadano_view, name='ciudadania-portal'),
+    path('ciudadania/ruta-grafica/', workflow_grafico_view, name='ciudadania-workflow'),
     path('ciudadania/nuevo/', reporte_nuevo_view, name='ciudadania-nuevo'),
     path('ciudadania/reporte/<int:pk>/', reporte_detalle_view, name='ciudadania-detalle'),
     path('ciudadania/api/asistente/', asistente_ia_api, name='ciudadania-asistente'),
@@ -48,6 +51,7 @@ urlpatterns = [
     path('ciudadania/api/centros-salud/', centros_salud_api, name='ciudadania-centros-salud'),
     path('ciudadania/api/eje/<str:eje_slug>/ubicaciones/', ubicaciones_eje_api, name='ciudadania-ubicaciones'),
     path('ciudadania/api/reporte/<int:pk>/chat/', reporte_chat_api, name='ciudadania-chat'),
+    path('ciudadania/api/reporte/<int:pk>/ruta/', ruta_atencion_api, name='ciudadania-ruta'),
     path('base-datos/', base_datos_view, name='base-datos'),
     path('mapa/', mapa_view, name='mapa'),
     path('metodologia/', metodologia_view, name='metodologia'),

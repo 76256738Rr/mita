@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa de Navegación — Plataforma MITA</title>
+  <style>
+    :root {
+      --primary: #1a365d;
+      --secondary: #2c5282;
+      --accent: #3182ce;
+      --inst: #2b6cb0;
+      --ciu: #276749;
+      --api: #744210;
+      --auth: #553c9a;
+      --muted: #718096;
+      --border: #e2e8f0;
+      --bg: #f7fafc;
+      --line: #cbd5e0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.55;
+      color: #2d3748;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 2rem 4rem;
+      background: #fff;
+    }
+    .cover {
+      text-align: center;
+      padding: 2.5rem 1rem 2rem;
+      border-bottom: 3px solid var(--primary);
+      margin-bottom: 2rem;
+      background: linear-gradient(180deg, #f8fbff 0%, #fff 100%);
+    }
+    .cover h1 { font-size: 1.85rem; color: var(--primary); margin: 0 0 0.35rem; }
+    .cover .subtitle { font-size: 1rem; color: var(--secondary); margin: 0 0 0.75rem; }
+    .cover .meta { font-size: 0.88rem; color: var(--muted); }
+    h2 {
+      color: var(--primary);
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0.35rem;
+      margin-top: 2.25rem;
+      page-break-after: avoid;
+    }
+    h3 { color: var(--secondary); margin-top: 1.5rem; font-size: 1.05rem; }
+    p, li { font-size: 0.9rem; }
+    .intro {
+      background: var(--bg);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.25rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1rem 0 1.5rem;
+    }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem;
+      margin: 1rem 0 1.5rem; font-size: 0.82rem;
+    }
+    .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+    .dot {
+      width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0;
+    }
+    .dot-root { background: var(--primary); }
+    .dot-auth { background: var(--auth); }
+    .dot-inst { background: var(--inst); }
+    .dot-ciu { background: var(--ciu); }
+    .dot-api { background: var(--api); }
+    .dot-action { background: #fff; border: 2px dashed var(--accent); }
+
+    /* ── Árbol jerárquico ── */
+    .sitemap-wrap {
+      overflow-x: auto;
+      padding: 1rem 0 1.5rem;
+      margin: 0.5rem 0 1.5rem;
+    }
+    .tree, .tree ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      position: relative;
+    }
+    .tree ul {
+      margin-left: 1.4rem;
+      padding-left: 1.2rem;
+      border-left: 2px solid var(--line);
+    }
+    .tree > ul > li > ul { margin-left: 0; padding-left: 0; border-left: none; }
+    .tree li {
+      position: relative;
+      padding: 0.35rem 0 0.35rem 0;
+    }
+    .tree li::before {
+      content: "";
+      position: absolute;
+      left: -1.2rem;
+      top: 1.15rem;
+      width: 1.2rem;
+      height: 2px;
+      background: var(--line);
+    }
+    .tree > ul > li::before { display: none; }
+    .tree > ul > li > .node { margin-bottom: 0.5rem; }
+
+    .node {
+      display: inline-block;
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      max-width: 100%;
+    }
+    .node small {
+      display: block;
+      font-weight: 400;
+      font-size: 0.72rem;
+      opacity: 0.85;
+      margin-top: 0.1rem;
+    }
+    .node code {
+      font-family: Consolas, monospace;
+      font-size: 0.72rem;
+      font-weight: 400;
+    }
+    .node-root { background: var(--primary); color: #fff; font-size: 0.95rem; padding: 0.5rem 1rem; }
+    .node-auth { background: #faf5ff; color: var(--auth); border-color: #d6bcfa; }
+    .node-inst { background: #ebf8ff; color: var(--inst); border-color: #90cdf4; }
+    .node-ciu { background: #f0fff4; color: var(--ciu); border-color: #9ae6b4; }
+    .node-api { background: #fffff0; color: var(--api); border-color: #f6e05e; }
+    .node-page { background: #fff; color: #2d3748; border-color: var(--border); font-weight: 500; }
+    .node-action {
+      background: #fff;
+      color: var(--secondary);
+      border: 1px dashed var(--accent);
+      font-weight: 400;
+      font-size: 0.78rem;
+    }
+    .node-role {
+      background: var(--bg);
+      color: var(--primary);
+      border-color: var(--border);
+      font-size: 0.78rem;
+    }
+
+    /* ── Mapa global horizontal ── */
+    .global-map {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin: 1.25rem 0 2rem;
+    }
+    @media (min-width: 768px) {
+      .global-map { grid-template-columns: 1fr 1fr; }
+      .global-map .span-2 { grid-column: 1 / -1; }
+    }
+    .map-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .map-card-header {
+      padding: 0.6rem 1rem;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #fff;
+    }
+    .map-card-header.inst { background: var(--inst); }
+    .map-card-header.ciu { background: var(--ciu); }
+    .map-card-header.api { background: var(--api); }
+    .map-card-header.auth { background: var(--auth); }
+    .map-card-body { padding: 0.85rem 1rem; }
+    .map-card-body ul { margin: 0; padding-left: 1.1rem; font-size: 0.82rem; }
+    .map-card-body li { margin: 0.25rem 0; }
+    .map-card-body li ul { margin-top: 0.2rem; color: var(--muted); }
+
+    /* ── Tabs por rol ── */
+    .role-tabs {
+      display: flex; flex-wrap: wrap; gap: 0.4rem;
+      margin: 1rem 0 0.75rem;
+    }
+    .role-tab {
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-size: 0.78rem;
+      cursor: default;
+      color: var(--secondary);
+    }
+    .role-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .role-panel {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.25rem;
+      background: #fafafa;
+    }
+    .role-panel h4 {
+      margin: 0 0 0.75rem;
+      color: var(--primary);
+      font-size: 0.95rem;
+    }
+    .role-panel .entry { margin: 0.15rem 0; font-size: 0.82rem; }
+    .role-panel .entry .path { color: var(--muted); font-family: Consolas, monospace; font-size: 0.75rem; }
+
+    /* ── Flujo workflow ── */
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.35rem;
+      margin: 0.75rem 0 1.25rem;
+    }
+    .flow-step {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.45rem 0.65rem;
+      font-size: 0.75rem;
+      text-align: center;
+      min-width: 90px;
+    }
+    .flow-step strong { display: block; color: var(--primary); font-size: 0.7rem; }
+    .flow-arrow { color: var(--muted); font-size: 1rem; }
+
+    @media print {
+      body { padding: 1rem; font-size: 9pt; }
+      .cover { page-break-after: always; }
+      .role-panel { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>Mapa de Navegación del Sitio</h1>
+  <p class="subtitle">Plataforma MITA — Arquitectura de páginas, menús y acciones</p>
+  <p class="subtitle">Gobierno del Estado de México</p>
+  <p class="meta">Representación jerárquica · Experiencia de usuario por rol · 2026</p>
+</div>
+
+<div class="intro">
+  <strong>Objetivo:</strong> estructurar de forma jerárquica las páginas, menús y acciones disponibles en MITA,
+  de modo que cada perfil de usuario recorra un camino lógico e intuitivo desde el inicio de sesión hasta la
+  conclusión de su tarea (expediente institucional o reporte ciudadano).
+</div>
+
+<div class="legend">
+  <span class="legend-item"><span class="dot dot-root"></span> Raíz / plataforma</span>
+  <span class="legend-item"><span class="dot dot-auth"></span> Autenticación</span>
+  <span class="legend-item"><span class="dot dot-inst"></span> Portal institucional</span>
+  <span class="legend-item"><span class="dot dot-ciu"></span> Ventanilla ciudadana</span>
+  <span class="legend-item"><span class="dot dot-api"></span> API / servicios</span>
+  <span class="legend-item"><span class="dot dot-action"></span> Acción del usuario</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>1. Arquitectura global del sitio</h2>
+<p>Vista de primer nivel: dos portales diferenciados tras autenticación, más capa de servicios y administración técnica.</p>
+
+<div class="global-map">
+  <div class="map-card span-2">
+    <div class="map-card-header auth">🔐 Acceso</div>
+    <div class="map-card-body">
+      <ul>
+        <li><strong>Inicio de sesión</strong> — <code>/login/</code>
+          <ul>
+            <li>Redirección automática según rol (ver sección 4)</li>
+          </ul>
+        </li>
+        <li><strong>Cierre de sesión</strong> — <code>/logout/</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="map-card">
+    <div class="map-card-header inst">🏛 Portal institucional</div>
+    <div class="map-card-body">
+      <ul>
+        <li>Dashboard, bandeja, expedientes</li>
+        <li>Conocimiento, mapa, proceso, metodología</li>
+        <li>Motor analógico, dictámenes, SNI, reportes</li>
+        <li><em>Roles:</em> admin, analista, investigador, dependencia, auditor</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="map-card">
+    <div class="map-card-header ciu">🏛 Ventanilla ciudadana Edomex</div>
+    <div class="map-card-body">
+      <ul>
+        <li>Portal de reportes, registro por eje</li>
+        <li>Ruta gráfica de atención</li>
+        <li>Detalle con chat y seguimiento</li>
+        <li><em>Rol exclusivo:</em> publico (usuario <code>ciudadano</code>)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="map-card span-2">
+    <div class="map-card-header api">⚙️ Capa de servicios</div>
+    <div class="map-card-body">
+      <ul>
+        <li><strong>API REST institucional</strong> — <code>/api/</code> (expedientes, MITA, geoespacial, reportes, búsqueda)</li>
+        <li><strong>API ciudadanía</strong> — <code>/ciudadania/api/</code> (asistente IA, centros salud, chat, ruta)</li>
+        <li><strong>Admin Django</strong> — <code>/admin/</code> (solo administrador)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>2. Árbol jerárquico completo</h2>
+<p>Estructura padre → hijo de todas las rutas web y acciones principales.</p>
+
+<div class="sitemap-wrap">
+  <div class="tree">
+    <ul>
+      <li>
+        <span class="node node-root">Plataforma MITA<small>https://…/ — Sistema web Django</small></span>
+        <ul>
+          <!-- AUTH -->
+          <li>
+            <span class="node node-auth">Autenticación</span>
+            <ul>
+              <li><span class="node node-page">Iniciar sesión<small><code>/login/</code></small></span></li>
+              <li><span class="node node-page">Cerrar sesión<small><code>/logout/</code></small></span></li>
+            </ul>
+          </li>
+
+          <!-- INSTITUCIONAL -->
+          <li>
+            <span class="node node-inst">Portal institucional</span>
+            <ul>
+              <li>
+                <span class="node node-page">Dashboard<small><code>/</code> · Resumen y KPIs</small></span>
+              </li>
+              <li>
+                <span class="node node-page">Bandeja de trabajo<small><code>/bandeja/</code></small></span>
+                <ul>
+                  <li><span class="node node-action">Ver tareas pendientes por paso</span></li>
+                  <li><span class="node node-action">Abrir expediente asignado</span></li>
+                </ul>
+              </li>
+              <li>
+                <span class="node node-page">Expedientes<small><code>/expedientes/</code></small></span>
+                <ul>
+                  <li><span class="node node-action">Listar / filtrar expedientes</span></li>
+                  <li>
+                    <span class="node node-page">Registrar asunto<small><code>/expedientes/nuevo/</code></small></span>
+                    <ul>
+                      <li><span class="node node-action">Capturar título, dependencia, solicitante</span></li>
+                      <li><span class="node node-action">Crear folio MITA-EXP-YYYY-NNNNN</span></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <span class="node node-page">Detalle de expediente<small><code>/expedientes/&lt;id&gt;/</code></small></span>
+                    <ul>
+                      <li><span class="node node-action">Paso 1 · Definición del asunto <span class="node-role">dependencia</span></span></li>
+                      <li><span class="node node-action">Paso 2 · Recopilación de conocimiento <span class="node-role">analista</span></span></li>
+                      <li><span class="node node-action">Paso 3 · Organización y relación <span class="node-role">analista</span></span></li>
+                      <li><span class="node node-action">Paso 4 · Análisis y analogía <span class="node-role">analista</span></span></li>
+                      <li><span class="node node-action">Paso 5 · Generación de opciones <span class="node-role">analista</span></span></li>
+                      <li><span class="node node-action">Paso 6 · Evaluación y selección <span class="node-role">investigador</span></span></li>
+                      <li><span class="node node-action">Paso 7 · Dictamen de validación <span class="node-role">admin</span></span></li>
+                      <li><span class="node node-action">Guardar paso · Avanzar · Dictaminar</span></li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li><span class="node node-page">Base de Conocimiento<small><code>/base-datos/</code></small></span></li>
+              <li><span class="node node-page">Mapa Geoespacial<small><code>/mapa/</code></small></span></li>
+              <li><span class="node node-page">Proceso Operativo<small><code>/proceso/</code></small></span></li>
+              <li><span class="node node-page">Metodología MITA<small><code>/metodologia/</code></small></span></li>
+              <li><span class="node node-page">Proyecto Demo<small><code>/proyecto/</code></small></span></li>
+              <li>
+                <span class="node node-page">Motor Analógico<small><code>/analogia/</code></small></span>
+                <ul>
+                  <li><span class="node node-action">Evaluar criterios A–F</span></li>
+                  <li><span class="node node-action">Generar dictamen PDF</span></li>
+                </ul>
+              </li>
+              <li><span class="node node-page">Dictámenes<small><code>/dictamenes/</code></small></span></li>
+              <li><span class="node node-page">Perfiles SNI<small><code>/sni/</code></small></span></li>
+              <li><span class="node node-page">Reportes<small><code>/reportes/</code></small></span></li>
+            </ul>
+          </li>
+
+          <!-- CIUDADANIA -->
+          <li>
+            <span class="node node-ciu">Ventanilla ciudadana Edomex</span>
+            <ul>
+              <li>
+                <span class="node node-page">Portal de reportes<small><code>/ciudadania/</code></small></span>
+                <ul>
+                  <li><span class="node node-action">Consultar reportes propios</span></li>
+                  <li><span class="node node-action">Ver número de control MITA-CIU-…</span></li>
+                </ul>
+              </li>
+              <li>
+                <span class="node node-page">Registrar problemática<small><code>/ciudadania/nuevo/</code></small></span>
+                <ul>
+                  <li><span class="node node-action">Elegir eje (Salud, Educación, Empleo…)</span></li>
+                  <li><span class="node node-action">Seleccionar municipio y centro de salud</span></li>
+                  <li><span class="node node-action">Usar asistente IA de captura</span></li>
+                </ul>
+              </li>
+              <li>
+                <span class="node node-page">Ruta gráfica de atención<small><code>/ciudadania/ruta-grafica/</code></small></span>
+                <ul>
+                  <li><span class="node node-action">Visualizar workflow de dependencias</span></li>
+                </ul>
+              </li>
+              <li>
+                <span class="node node-page">Detalle del reporte<small><code>/ciudadania/reporte/&lt;id&gt;/</code></small></span>
+                <ul>
+                  <li><span class="node node-action">Ver ruta de atención con responsables y fechas</span></li>
+                  <li><span class="node node-action">Chat con responsable de atención</span></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+
+          <!-- API -->
+          <li>
+            <span class="node node-api">Servicios (API)</span>
+            <ul>
+              <li>
+                <span class="node node-api">API institucional<small><code>/api/</code></small></span>
+                <ul>
+                  <li><span class="node node-page">Expedientes, bandeja, workflow</span></li>
+                  <li><span class="node node-page">MITA: cruces, analogía, dictámenes</span></li>
+                  <li><span class="node node-page">Geoespacial, reportes, búsqueda</span></li>
+                </ul>
+              </li>
+              <li>
+                <span class="node node-api">API ciudadanía<small><code>/ciudadania/api/</code></small></span>
+                <ul>
+                  <li><span class="node node-page">Asistente IA · Centros salud · Ubicaciones</span></li>
+                  <li><span class="node node-page">Chat · Ruta de atención (JSON)</span></li>
+                </ul>
+              </li>
+              <li><span class="node node-page">Administración Django<small><code>/admin/</code></small></span></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>3. Flujo de navegación — Expediente institucional</h2>
+<p>Secuencia lógica que el usuario recorre dentro del módulo de expedientes (7 pasos).</p>
+
+<div class="flow">
+  <div class="flow-step"><strong>Entrada</strong>Bandeja o<br>Registrar asunto</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step"><strong>1</strong>Definición<br><em>dependencia</em></div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step"><strong>2</strong>Conocimiento<br><em>analista</em></div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step"><strong>3</strong>Organización<br><em>analista</em></div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step"><strong>4</strong>Analogía<br><em>analista</em></div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step"><strong>5</strong>Opciones<br><em>analista</em></div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step"><strong>6</strong>Evaluación<br><em>investigador</em></div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step"><strong>7</strong>Dictamen<br><em>admin</em></div>
+</div>
+
+<p>Cada paso permite: <strong>guardar borrador</strong>, <strong>avanzar al siguiente paso</strong> (si cumple validaciones) y, en paso 7, <strong>emitir dictamen</strong>. El auditor puede consultar cualquier paso sin editar.</p>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>4. Flujo de navegación — Ventanilla ciudadana</h2>
+
+<div class="flow">
+  <div class="flow-step"><strong>Portal</strong>Ver mis<br>reportes</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step"><strong>Registro</strong>Eje + municipio<br>+ asistente IA</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step"><strong>Confirmación</strong>Folio<br>MITA-CIU-…</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step"><strong>Seguimiento</strong>Ruta + chat<br>con responsable</div>
+  <span class="flow-arrow">↔</span>
+  <div class="flow-step"><strong>Referencia</strong>Ruta gráfica<br>dependencias</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>5. Menú lateral por rol (mapa de navegación personalizado)</h2>
+<p>Cada usuario solo ve las ramas del árbol a las que tiene acceso. El menú se genera dinámicamente desde <code>core/navigation.py</code>.</p>
+
+<div class="role-tabs">
+  <span class="role-tab active">admin</span>
+  <span class="role-tab">analista</span>
+  <span class="role-tab">investigador</span>
+  <span class="role-tab">dependencia</span>
+  <span class="role-tab">auditor</span>
+  <span class="role-tab">publico</span>
+</div>
+
+<div class="role-panel">
+  <h4>Administrador — acceso completo</h4>
+  <div class="entry">📊 Dashboard <span class="path">/</span></div>
+  <div class="entry">📥 Bandeja <span class="path">/bandeja/</span></div>
+  <div class="entry">📁 Expedientes → detalle (pasos 1–7, dictaminar) <span class="path">/expedientes/</span></div>
+  <div class="entry">➕ Registrar asunto <span class="path">/expedientes/nuevo/</span></div>
+  <div class="entry">🧠 Base de Conocimiento · 🗺️ Mapa · ⚙️ Proceso · 📚 Metodología · 🚀 Proyecto · 🔬 Motor Analógico</div>
+  <div class="entry">⚖️ Dictámenes · 👨‍🔬 SNI · 📈 Reportes · 🔐 Admin Django <span class="path">/admin/</span></div>
+</div>
+
+<div class="role-panel">
+  <h4>Analista MITA</h4>
+  <div class="entry">Dashboard · Bandeja · Expedientes (pasos 2–5) · Proceso · Metodología · Proyecto</div>
+  <div class="entry">Base de Conocimiento · Mapa Geoespacial · Motor Analógico</div>
+  <div class="entry"><em>Inicio post-login:</em> bandeja o expediente demo paso 4</div>
+</div>
+
+<div class="role-panel">
+  <h4>Investigador SNI</h4>
+  <div class="entry">Dashboard · Bandeja · Expedientes (paso 6) · Proceso · Metodología · Dictámenes · Perfiles SNI</div>
+  <div class="entry"><em>Inicio post-login:</em> expediente demo paso 6</div>
+</div>
+
+<div class="role-panel">
+  <h4>Dependencia gubernamental</h4>
+  <div class="entry">Dashboard · Bandeja · Expedientes (paso 1) · ➕ Registrar asunto · Proceso Operativo</div>
+  <div class="entry"><em>Inicio post-login:</em> <span class="path">/expedientes/nuevo/</span></div>
+</div>
+
+<div class="role-panel">
+  <h4>Auditor (solo consulta)</h4>
+  <div class="entry">Dashboard · Expedientes (lectura) · Dictámenes · Reportes</div>
+  <div class="entry"><em>Sin:</em> bandeja, registro, edición de pasos</div>
+</div>
+
+<div class="role-panel">
+  <h4>Público general (ciudadano Edomex)</h4>
+  <div class="entry">🏛 Ventanilla Ciudadana <span class="path">/ciudadania/</span></div>
+  <div class="entry">➕ Registrar problemática <span class="path">/ciudadania/nuevo/</span></div>
+  <div class="entry">🔀 Ruta gráfica de atención <span class="path">/ciudadania/ruta-grafica/</span></div>
+  <div class="entry">Detalle + chat <span class="path">/ciudadania/reporte/&lt;id&gt;/</span></div>
+  <div class="entry"><em>Inicio post-login:</em> <span class="path">/ciudadania/</span> · <em>Sin acceso</em> al portal institucional</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>6. Principios de diseño de navegación</h2>
+<ul>
+  <li><strong>Separación de portales:</strong> el rol <code>publico</code> nunca ve el menú institucional; los demás roles no ven la ventanilla ciudadana.</li>
+  <li><strong>Profundidad máxima 3 niveles</strong> en la mayoría de flujos: menú → listado → detalle/acción.</li>
+  <li><strong>Coherencia workflow:</strong> bandeja y expediente comparten la misma secuencia de 7 pasos con responsables claros.</li>
+  <li><strong>Acciones contextuales:</strong> guardar, avanzar y dictaminar solo aparecen en el paso activo del expediente.</li>
+  <li><strong>API paralela:</strong> las mismas capacidades institucionales están expuestas vía REST para integraciones futuras.</li>
+  <li><strong>Redirección inteligente:</strong> tras login, cada rol aterriza en la página más relevante para su tarea principal.</li>
+</ul>
+
+<p style="margin-top:2.5rem;font-size:0.85rem;color:var(--muted);text-align:center;">
+  Mapa de Navegación MITA · Complemento de Ficha Técnica y Mapa de Funcionalidad · Estado de México 2026
+</p>
+
+</body>
+</html>

@@ -15,8 +15,24 @@
 <div class="alert alert-success">
   <strong>Número de control:</strong> {{ reporte.numero_control }} —
   Eje: {{ reporte.get_eje_display }} —
-  Estado: {{ reporte.get_estado_display }}
+  Estado: <span id="estado-reporte">{{ reporte.get_estado_display }}</span>
 </div>
+
+{% if responsable.nombre %}
+<div class="card responsable-card" style="margin-bottom:1.25rem;border-left:4px solid var(--mita-secondary);">
+  <div class="responsable-card-inner">
+    <div class="responsable-avatar">{{ responsable.nombre|slice:":1" }}</div>
+    <div>
+      <h3 style="margin:0;font-size:1rem;">Responsable de atención al ciudadano</h3>
+      <p style="margin:0.25rem 0 0;font-weight:600;">{{ responsable.nombre }}</p>
+      <p style="margin:0.15rem 0 0;font-size:0.85rem;color:var(--mita-muted);">{{ responsable.cargo }}</p>
+      <p style="margin:0.35rem 0 0;font-size:0.8rem;"><strong>{{ responsable.dependencia|default:reporte.dependencia_principal }}</strong>
+        {% if responsable.correo %} · {{ responsable.correo }}{% endif %}
+      </p>
+    </div>
+  </div>
+</div>
+{% endif %}
 
 <div class="grid grid-2" style="margin-bottom:1.25rem;">
   <div class="card">
@@ -46,19 +62,24 @@
     </p>
     {% endif %}
     {% if reporte.fecha_estimada_atencion %}
-    <p style="font-size:0.85rem;"><strong>Fecha estimada de atención:</strong> {{ reporte.fecha_estimada_atencion|date:"d/m/Y" }}</p>
+    <p style="font-size:0.85rem;"><strong>Fecha estimada de resolución:</strong> {{ reporte.fecha_estimada_atencion|date:"d/m/Y" }}</p>
     {% endif %}
   </div>
   <div class="card">
-    <h3>Dependencia turnada</h3>
-    <p style="font-size:0.95rem;font-weight:600;color:var(--mita-secondary);">{{ reporte.dependencia_principal }}</p>
-    <p style="font-size:0.85rem;margin-top:0.5rem;">{{ reporte.respuesta_dependencia }}</p>
-    <h4 style="font-size:0.85rem;margin-top:1rem;">Dependencias involucradas</h4>
-    <ul style="font-size:0.85rem;padding-left:1.2rem;">
+    <h3>Dependencias en su ruta</h3>
+    <ul class="deps-ruta-list">
       {% for d in reporte.dependencias_involucradas %}
-      <li><strong>{{ d.nombre }}</strong> — {{ d.rol }}</li>
+      <li>
+        <strong>{{ d.nombre }}</strong>
+        <span>{{ d.rol }}</span>
+      </li>
       {% endfor %}
     </ul>
+    {% if paso_activo %}
+    <p style="font-size:0.85rem;margin-top:1rem;padding:0.65rem;background:#fffaf0;border-radius:8px;border:1px solid #fbd38d;">
+      <strong>Paso en curso:</strong> {{ paso_activo.nombre }} — {{ paso_activo.dependencia }}
+    </p>
+    {% endif %}
   </div>
 </div>
 
@@ -73,34 +94,58 @@
 </div>
 {% endif %}
 
+<div class="card" style="margin-bottom:1.25rem;">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem;">
+    <h3 style="margin:0;">Ruta de atención de su problemática</h3>
+    <a href="{% url 'ciudadania-workflow' %}?reporte={{ reporte.pk }}" class="btn btn-sm btn-primary">Ver workflow gráfico →</a>
+  </div>
+  <p style="font-size:0.85rem;color:var(--mita-muted);margin-bottom:1rem;">
+    Workflow de dependencias: quién recibió su caso, quién lo atiende y en qué fechas.
+  </p>
+  <div class="ruta-tramite ruta-timeline" id="ruta-atencion">
+    {% for paso in reporte.ruta_tramite %}
+    <div class="ruta-paso ruta-{{ paso.estado }}" data-orden="{{ paso.orden }}">
+      <div class="ruta-orden">{{ paso.orden }}</div>
+      <div class="ruta-contenido">
+        <div class="ruta-titulo-row">
+          <strong>{{ paso.nombre }}</strong>
+          <span class="badge badge-{% if paso.estado == 'completado' %}success{% elif paso.estado == 'activo' %}warning{% else %}info{% endif %}">{{ paso.estado }}</span>
+        </div>
+        <p class="ruta-dep">{{ paso.dependencia }}</p>
+        <p class="ruta-desc">{{ paso.descripcion }}</p>
+        {% if paso.responsable %}
+        <p class="ruta-responsable">
+          <span class="ruta-label">Atiende:</span>
+          <strong>{{ paso.responsable.nombre }}</strong> — {{ paso.responsable.cargo }}
+        </p>
+        {% endif %}
+        <div class="ruta-fechas">
+          <span><span class="ruta-label">Recibido:</span> {{ paso.fecha_recibido_fmt|default:"—" }}</span>
+          <span><span class="ruta-label">Inicio atención:</span> {{ paso.fecha_inicio_atencion_fmt|default:"—" }}</span>
+          {% if paso.fecha_fin_fmt and paso.fecha_fin_fmt != "—" %}
+          <span><span class="ruta-label">Concluido:</span> {{ paso.fecha_fin_fmt }}</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
 {% if ubicaciones %}
 <div class="card" style="margin-bottom:1.25rem;">
   {% include 'ciudadania/_mapa_ubicaciones.html' with eje_cfg=reporte.eje_config mapa_filtrar_municipio=False %}
 </div>
 {% endif %}
 
-<div class="card" style="margin-bottom:1.25rem;">
-  <h3>Ruta de turnado</h3>
-  <div class="ruta-tramite">
-    {% for paso in reporte.ruta_tramite %}
-    <div class="ruta-paso ruta-{{ paso.estado }}">
-      <div class="ruta-orden">{{ paso.orden }}</div>
-      <div>
-        <strong>{{ paso.nombre }}</strong> — {{ paso.dependencia }}
-        <p style="font-size:0.8rem;color:var(--mita-muted);margin:0.15rem 0 0;">{{ paso.descripcion }}</p>
-      </div>
-      <span class="badge badge-{% if paso.estado == 'completado' %}success{% elif paso.estado == 'activo' %}warning{% else %}info{% endif %}">{{ paso.estado }}</span>
-    </div>
-    {% endfor %}
-  </div>
-</div>
-
 <div class="card chat-panel">
   <div class="chat-header">
-    <span class="chat-dep-badge">DEP</span>
+    <span class="chat-responsable-badge">RC</span>
     <div>
-      <strong>Chat con {{ reporte.dependencia_principal }}</strong>
-      <p style="font-size:0.75rem;color:var(--mita-muted);margin:0;">Consulte plazos, proceso de atención o motivos de resolución</p>
+      <strong>Chat con {% if responsable.nombre %}{{ responsable.nombre }}{% else %}su enlace ciudadano{% endif %}</strong>
+      <p style="font-size:0.75rem;color:var(--mita-muted);margin:0;">
+        Comuníquese directamente con la persona responsable de atención al ciudadano
+      </p>
     </div>
   </div>
   <div class="chat-messages" id="chat-dep-messages">
@@ -113,11 +158,11 @@
     {% endfor %}
   </div>
   <div class="chat-input-row">
-    <input type="text" id="chat-dep-input" placeholder="Escriba su mensaje a la dependencia..." autocomplete="off">
+    <input type="text" id="chat-dep-input" placeholder="Escriba a su responsable de atención..." autocomplete="off">
     <button type="button" class="btn btn-primary btn-sm" id="chat-dep-send">Enviar</button>
   </div>
   <p style="font-size:0.75rem;color:var(--mita-muted);margin-top:0.5rem;">
-    Ejemplos: "¿Cuándo atenderán mi caso?", "¿Cómo se resolverá?", "¿Por qué no procede?"
+    Ejemplos: "¿Quién me atiende?", "¿Cuándo recibieron mi caso?", "¿Cómo va mi trámite?"
   </p>
 </div>
 
@@ -133,14 +178,9 @@
   const ejeSlug = '{{ reporte.eje }}';
   const centroSeleccionado = '{{ centro_salud_slug|default:"" }}';
   const iconos = {
-  salud: '#3182ce',
-  educacion: '#805ad5',
-  empleo: '#d69e2e',
-  seguridad: '#2c5282',
-  economia: '#276749',
-  corrupcion: '#c53030',
-  agua: '#0891b2'
-};
+    salud: '#3182ce', educacion: '#805ad5', empleo: '#d69e2e',
+    seguridad: '#2c5282', economia: '#276749', corrupcion: '#c53030', agua: '#0891b2'
+  };
   const map = L.map('mapa-ciudadania').setView([19.35, -99.5], 9);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM — Edomex' }).addTo(map);
   const ul = document.getElementById('lista-ubicaciones');
@@ -169,6 +209,7 @@
   const inputEl = document.getElementById('chat-dep-input');
   const sendBtn = document.getElementById('chat-dep-send');
   const autorCiudadano = '{{ user.get_full_name|default:user.username }}';
+  const estadoEl = document.getElementById('estado-reporte');
 
   function appendMsg(tipo, autor, texto) {
     const div = document.createElement('div');
@@ -192,9 +233,10 @@
       });
       const data = await res.json();
       if (data.mensajes) {
-        const dep = data.mensajes.find(m => m.tipo === 'dependencia');
-        if (dep) appendMsg('dependencia', dep.autor, dep.contenido);
+        const resp = data.mensajes.find(m => m.tipo === 'responsable' || m.tipo === 'dependencia');
+        if (resp) appendMsg(resp.tipo, resp.autor, resp.contenido);
       }
+      if (data.estado_label && estadoEl) estadoEl.textContent = data.estado_label;
     } finally {
       sendBtn.disabled = false;
       inputEl.focus();

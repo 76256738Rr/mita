@@ -8,10 +8,12 @@ from django.views.decorators.http import require_http_methods
 
 from conocimiento.models import Disciplina
 from geoespacial.models import ZonaGeografica
-from core.demo_simulation import DEMO_FOLIO_ACTIVO, DEMO_FOLIO_DICTAMINADO
+from core.analogia_utils import CRITERIO_ICONOS, CRITERIOS_LABELS, propuesta_desde_post, persistir_dictamen
+from core.demo_simulation import CRITERIOS_DEMO, DEMO_FOLIO_ACTIVO, DEMO_FOLIO_DICTAMINADO
 from mita_engine.models import CruceInterdisciplinario, Dictamen, EjeMITA, Expediente, PasoProceso, TareaExpediente
 from mita_engine.proceso_utils import metricas_proceso_operativo
 from mita_engine.services import evaluar_analogia, generar_dictamen
+from mita_engine.workflow import WorkflowEngine
 from proyectos.models import ProyectoReferencia
 from reportes.models import IndicadorImpacto
 from sni.models import PerfilSNI
@@ -101,25 +103,89 @@ def proyecto_view(request):
 
 @require_http_methods(['GET', 'POST'])
 def analogia_view(request):
-    """Redirige al flujo de expediente (paso 4 del proceso operativo)."""
+    """Motor Analógico MITA — evaluación de propuestas y dictamen (RF-06)."""
     from django.contrib import messages
-    from django.shortcuts import redirect
 
     expediente = _expediente_from_request(request)
-    if not expediente:
-        activos = Expediente.objects.filter(paso_actual=4).exclude(
-            estado__in=[Expediente.Estado.CERRADO, Expediente.Estado.CANCELADO],
-        ).order_by('-actualizado_en')
-        expediente = activos.first()
+    propuesta = {}
+    resultado = None
+    dictamen = None
+    dictamen_obj = None
 
-    if expediente:
-        if request.user.is_authenticated:
-            request.session['expediente_activo'] = expediente.pk
-        messages.info(request, f'Análisis analógico integrado en el expediente {expediente.folio} (Paso 4).')
-        return redirect('expediente-detalle', pk=expediente.pk)
+    if request.method == 'POST':
+        propuesta = propuesta_desde_post(request.POST)
+        if not propuesta.get('titulo'):
+            messages.error(request, 'Indique el título de la propuesta.')
+        else:
+            resultado = evaluar_analogia(propuesta)
 
-    messages.warning(request, 'Cree un expediente para iniciar el proceso operativo.')
-    return redirect('expediente-nuevo')
+            if expediente and expediente.paso_actual == 4:
+                try:
+                    WorkflowEngine.guardar_paso(expediente, 4, propuesta, request.user)
+                    messages.success(
+                        request,
+                        f'Evaluación analógica guardada en expediente {expediente.folio} (Paso 4).',
+                    )
+                except Exception as exc:
+                    messages.warning(request, f'No se pudo vincular al expediente: {exc}')
+
+            if request.POST.get('generar_dictamen'):
+                dictamen, dictamen_obj = persistir_dictamen(
+                    propuesta, resultado, request.user
+                )
+                messages.success(request, f'Dictamen {dictamen["folio"]} generado y registrado.')
+            else:
+                messages.success(request, 'Evaluación analógica completada.')
+
+    elif request.GET.get('demo') == '1':
+        propuesta = dict(CRITERIOS_DEMO)
+        propuesta['ejes_accion'] = list(CRITERIOS_DEMO.get('ejes_accion', []))
+
+    elif expediente:
+        paso1 = (expediente.artefactos or {}).get('1', {})
+        paso4 = (expediente.artefactos or {}).get('4', {})
+        if paso4.get('criterios'):
+            propuesta = paso4['criterios']
+            resultado = paso4.get('evaluacion')
+        elif paso1:
+            propuesta = {
+                'titulo': paso1.get('titulo', expediente.titulo),
+                'descripcion': paso1.get('descripcion', expediente.descripcion),
+                'solicitante': paso1.get('solicitante', expediente.solicitante),
+                'presupuesto': 0,
+                'ejes_accion': [],
+            }
+
+    criterios_visual = []
+    riesgos_visual = []
+    if resultado:
+        for clave, valor in resultado.get('criterios', {}).items():
+            criterios_visual.append({
+                'clave': clave,
+                'nombre': CRITERIOS_LABELS.get(clave, clave.replace('_', ' ').title()),
+                'valor': valor,
+                'icono': CRITERIO_ICONOS.get(clave, 'img/analogia/criterio-coherencia.svg'),
+            })
+        from core.analogia_utils import RIESGO_ICONOS
+        for riesgo in resultado.get('riesgos', []):
+            riesgos_visual.append({
+                **riesgo,
+                'icono': RIESGO_ICONOS.get(riesgo.get('tipo'), 'img/analogia/riesgo-sesgado.svg'),
+            })
+
+    if propuesta.get('ejes_accion'):
+        propuesta = {**propuesta, 'ejes_str': [str(x) for x in propuesta['ejes_accion']]}
+
+    return render(request, 'analogia.html', {
+        'expediente': expediente,
+        'propuesta': propuesta,
+        'resultado': resultado,
+        'dictamen': dictamen,
+        'dictamen_obj': dictamen_obj,
+        'criterios_visual': criterios_visual,
+        'riesgos_visual': riesgos_visual,
+        'paso_proceso': 4,
+    })
 
 
 def sni_view(request):

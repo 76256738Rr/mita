@@ -13,6 +13,7 @@
     <h3>Registrar nueva problemática</h3>
     <p style="font-size:0.9rem;margin:0.75rem 0;">Seleccione un eje temático y complete los datos con ayuda del asistente IA.</p>
     <a href="{% url 'ciudadania-nuevo' %}" class="btn btn-primary">Nuevo reporte →</a>
+    <a href="{% url 'ciudadania-workflow' %}" class="btn btn-sm" style="margin-left:0.5rem;">Ruta gráfica →</a>
   </div>
   <div class="card stat-card">
     <div class="value">{{ reportes|length }}</div>
@@ -36,17 +37,18 @@
   <h3>Mis reportes</h3>
   <table>
     <thead>
-      <tr><th>Número de control</th><th>Eje</th><th>Título</th><th>Estado</th><th>Fecha</th><th></th></tr>
+      <tr><th>Número de control</th><th>Eje</th><th>Responsable</th><th>Estado</th><th>Fecha</th><th></th></tr>
     </thead>
     <tbody>
       {% for r in reportes %}
       <tr>
         <td><strong>{{ r.numero_control }}</strong></td>
         <td>{{ r.get_eje_display }}</td>
-        <td>{{ r.titulo|truncatechars:40 }}</td>
+        <td>{{ r.responsable_atencion.nombre|default:r.dependencia_principal|truncatechars:35 }}</td>
         <td><span class="badge badge-info">{{ r.get_estado_display }}</span></td>
         <td>{{ r.creado_en|date:"d/m/Y" }}</td>
-        <td><a href="{% url 'ciudadania-detalle' r.pk %}" class="btn btn-sm btn-primary">Ver / Chat</a></td>
+        <td><a href="{% url 'ciudadania-workflow' %}?reporte={{ r.pk }}" class="btn btn-sm" style="margin-right:0.25rem;">Gráfico</a>
+            <a href="{% url 'ciudadania-detalle' r.pk %}" class="btn btn-sm btn-primary">Chat</a></td>
       </tr>
       {% endfor %}
     </tbody>
